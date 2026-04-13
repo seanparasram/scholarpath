@@ -21,6 +21,7 @@ import { SCHOLARSHIPS, matchScholarships } from "@/lib/scholarships";
 import ScholarshipCard from "@/components/ScholarshipCard";
 import ScholarshipModal from "@/components/ScholarshipModal";
 import SchoolSearch from "@/components/SchoolSearch";
+import CollegeSearch from "@/components/CollegeSearch";
 import FullRoadmap from "@/components/FullRoadmap";
 import LeadOptIn from "@/components/LeadOptIn";
 import AffiliateResources from "@/components/AffiliateResources";
@@ -363,16 +364,16 @@ export default function Home() {
                           className="input-field"
                         />
                       </div>
-                      <SchoolSearch
-                        value={profile.highSchool}
-                        domain={profile.highSchoolDomain}
-                        onChange={(name, domain) => {
-                          updateProfile("highSchool", name);
-                          updateProfile("highSchoolDomain", domain);
-                        }}
-                        label="High School"
-                        placeholder="Search for your high school..."
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">High School</label>
+                        <input
+                          type="text"
+                          value={profile.highSchool}
+                          onChange={(e) => updateProfile("highSchool", e.target.value)}
+                          placeholder="e.g., Lincoln High School"
+                          className="input-field"
+                        />
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">State of Residence</label>
                         <select
@@ -531,24 +532,10 @@ export default function Home() {
                           className="input-field"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          Intended College(s) <span className="text-slate-400 font-normal">(optional)</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={profile.intendedColleges.join(", ")}
-                          onChange={(e) =>
-                            updateProfile(
-                              "intendedColleges",
-                              e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
-                            )
-                          }
-                          placeholder="e.g., UCLA, Texas A&M, Community College"
-                          className="input-field"
-                        />
-                        <p className="text-xs text-slate-400 mt-1">Separate multiple schools with commas</p>
-                      </div>
+                      <CollegeSearch
+                        selected={profile.intendedColleges}
+                        onChange={(colleges) => updateProfile("intendedColleges", colleges)}
+                      />
                       <div className="flex justify-between pt-1">
                         <button
                           type="button"
