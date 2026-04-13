@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   GraduationCap,
   User,
@@ -15,23 +15,33 @@ import {
   Filter,
   X,
   MapPin,
+  LogIn,
+  LogOut,
+  Bookmark,
+  School,
 } from "lucide-react";
-import { StudentProfile, Scholarship, FilterState, Activity, Award, Project, ScholarshipCategory } from "@/lib/types";
+import { StudentProfile, Scholarship, FilterState, Activity, Award, Project, ScholarshipCategory, StudentType } from "@/lib/types";
 import { SCHOLARSHIPS, matchScholarships } from "@/lib/scholarships";
+import { useAuth } from "@/lib/auth-context";
 import ScholarshipCard from "@/components/ScholarshipCard";
 import ScholarshipModal from "@/components/ScholarshipModal";
-import SchoolSearch from "@/components/SchoolSearch";
 import CollegeSearch from "@/components/CollegeSearch";
 import FullRoadmap from "@/components/FullRoadmap";
 import LeadOptIn from "@/components/LeadOptIn";
 import AffiliateResources from "@/components/AffiliateResources";
+import AuthModal from "@/components/AuthModal";
+import SchoolSearch from "@/components/SchoolSearch";
 
 const EMPTY_PROFILE: StudentProfile = {
+  studentType: "high-school",
   firstName: "",
   lastName: "",
   email: "",
   highSchool: "",
   highSchoolDomain: "",
+  currentCollege: "",
+  currentCollegeDomain: "",
+  classYear: "",
   gpa: "",
   satScore: "",
   actScore: "",
@@ -111,11 +121,14 @@ const ALL_CATEGORIES: { key: ScholarshipCategory; label: string }[] = [
 type ProfileSection = "personal" | "academic" | "activities" | "about";
 
 export default function Home() {
+  const { user, profile: savedProfile, loading: authLoading, signOut, saveProfile, tracked } = useAuth();
   const [profile, setProfile] = useState<StudentProfile>(EMPTY_PROFILE);
   const [submitted, setSubmitted] = useState(false);
   const [openSection, setOpenSection] = useState<ProfileSection>("personal");
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFullRoadmap, setShowFullRoadmap] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showTrackedView, setShowTrackedView] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -126,6 +139,13 @@ export default function Home() {
     maxAmount: 1000000,
     showExpired: false,
   });
+
+  // Load saved profile when auth resolves
+  useEffect(() => {
+    if (savedProfile && !submitted) {
+      setProfile(savedProfile);
+    }
+  }, [savedProfile, submitted]);
 
   const matchedScholarships = useMemo(() => {
     if (!submitted) return [];
@@ -240,8 +260,11 @@ export default function Home() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (user) {
+      await saveProfile(profile);
+    }
     setSubmitted(true);
     setTimeout(() => {
       document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
@@ -292,14 +315,46 @@ export default function Home() {
             </div>
             <span className="font-bold text-slate-900 text-lg tracking-tight">ScholarPath</span>
           </div>
-          {submitted && (
-            <button
-              onClick={() => setSubmitted(false)}
-              className="text-sm text-indigo-600 font-medium hover:text-indigo-700"
-            >
-              Edit Profile
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {submitted && (
+              <button
+                onClick={() => setSubmitted(false)}
+                className="text-sm text-indigo-600 font-medium hover:text-indigo-700"
+              >
+                Edit Profile
+              </button>
+            )}
+            {submitted && user && tracked.length > 0 && (
+              <button
+                onClick={() => setShowTrackedView(!showTrackedView)}
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                My Scholarships ({tracked.length})
+              </button>
+            )}
+            {!authLoading && (
+              user ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 hidden sm:inline">{user.email}</span>
+                  <button
+                    onClick={signOut}
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 hover:border-indigo-300 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  Sign In
+                </button>
+              )
+            )}
+          </div>
         </div>
       </nav>
 
@@ -312,13 +367,52 @@ export default function Home() {
                 Find Scholarships Built for You
               </h1>
               <p className="text-slate-500 text-lg max-w-xl mx-auto">
-                Fill out your profile once. Get matched with scholarships you can actually win — with
-                AI-powered essay help included.
+                {user
+                  ? "Welcome back — your profile is loaded. Update anything and search."
+                  : "Fill out your profile once. Get matched with scholarships you can actually win — with AI-powered essay help included."}
               </p>
+              {!user && (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  Create a free account to save your profile
+                </button>
+              )}
             </div>
 
             {/* Profile Form */}
             <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+              {/* Student type toggle */}
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => updateProfile("studentType", "high-school" as StudentType)}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      profile.studentType === "high-school"
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-800"
+                    }`}
+                  >
+                    <School className="w-4 h-4" />
+                    High School Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateProfile("studentType", "college" as StudentType)}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      profile.studentType === "college"
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-800"
+                    }`}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    College Student
+                  </button>
+                </div>
+              </div>
+
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
                 {/* SECTION: Personal */}
                 <div>
@@ -364,16 +458,46 @@ export default function Home() {
                           className="input-field"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">High School</label>
-                        <input
-                          type="text"
-                          value={profile.highSchool}
-                          onChange={(e) => updateProfile("highSchool", e.target.value)}
-                          placeholder="e.g., Lincoln High School"
-                          className="input-field"
-                        />
-                      </div>
+                      {profile.studentType === "high-school" ? (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">High School</label>
+                          <input
+                            type="text"
+                            value={profile.highSchool}
+                            onChange={(e) => updateProfile("highSchool", e.target.value)}
+                            placeholder="e.g., Lincoln High School"
+                            className="input-field"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <SchoolSearch
+                            value={profile.currentCollege}
+                            domain={profile.currentCollegeDomain}
+                            onChange={(name, domain) => {
+                              updateProfile("currentCollege", name);
+                              updateProfile("currentCollegeDomain", domain);
+                            }}
+                            label="Current College"
+                            placeholder="Search for your college..."
+                          />
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Class Year</label>
+                            <select
+                              value={profile.classYear}
+                              onChange={(e) => updateProfile("classYear", e.target.value)}
+                              className="input-field"
+                            >
+                              <option value="">Select...</option>
+                              <option value="Freshman">Freshman</option>
+                              <option value="Sophomore">Sophomore</option>
+                              <option value="Junior">Junior</option>
+                              <option value="Senior">Senior</option>
+                              <option value="Graduate">Graduate Student</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">State of Residence</label>
                         <select
@@ -523,7 +647,9 @@ export default function Home() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Intended Major</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                          {profile.studentType === "college" ? "Declared Major" : "Intended Major"}
+                        </label>
                         <input
                           type="text"
                           value={profile.intendedMajor}
@@ -854,7 +980,9 @@ export default function Home() {
                     {profile.firstName} {profile.lastName}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {profile.highSchool || "High School Student"}
+                    {profile.studentType === "college"
+                      ? (profile.currentCollege || "College Student")
+                      : (profile.highSchool || "High School Student")}
                     {profile.gpa && ` · GPA ${profile.gpa}`}
                     {profile.intendedMajor && ` · ${profile.intendedMajor}`}
                   </p>
@@ -1031,6 +1159,69 @@ export default function Home() {
           profile={profile}
           onClose={() => setShowFullRoadmap(false)}
         />
+      )}
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+
+      {/* Tracked scholarships panel */}
+      {showTrackedView && user && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowTrackedView(false)} />
+          <div className="relative w-full sm:max-w-lg h-[80vh] sm:h-auto sm:max-h-[80vh] bg-white sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
+            <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">My Scholarships</h2>
+                <p className="text-sm text-slate-500">{tracked.length} scholarships tracked</p>
+              </div>
+              <button onClick={() => setShowTrackedView(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {tracked.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-8">
+                  No scholarships tracked yet. Click on a scholarship and save or mark it as applied.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {tracked.map((t) => {
+                    const s = SCHOLARSHIPS.find((s) => s.id === t.scholarshipId);
+                    if (!s) return null;
+                    const statusColors: Record<string, string> = {
+                      saved: "bg-blue-50 text-blue-700 border-blue-200",
+                      applied: "bg-amber-50 text-amber-700 border-amber-200",
+                      won: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      rejected: "bg-slate-50 text-slate-500 border-slate-200",
+                    };
+                    const statusLabels: Record<string, string> = {
+                      saved: "Saved",
+                      applied: "Applied",
+                      won: "Won",
+                      rejected: "Not Selected",
+                    };
+                    return (
+                      <button
+                        key={t.scholarshipId}
+                        onClick={() => { setSelectedScholarship(s); setShowTrackedView(false); }}
+                        className="w-full text-left bg-white border border-slate-200 hover:border-indigo-300 rounded-xl p-4 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">{s.name}</p>
+                            <p className="text-xs text-slate-500">{s.organization} &middot; {s.amount}</p>
+                          </div>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusColors[t.status]}`}>
+                            {statusLabels[t.status]}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,9 +1,18 @@
+export type StudentType = "high-school" | "college";
+
 export interface StudentProfile {
+  studentType: StudentType;
   firstName: string;
   lastName: string;
   email: string;
+  // High school students
   highSchool: string;
   highSchoolDomain: string;
+  // College students
+  currentCollege: string;
+  currentCollegeDomain: string;
+  classYear: string; // Freshman, Sophomore, Junior, Senior
+  // Shared
   gpa: string;
   satScore: string;
   actScore: string;
@@ -40,6 +49,16 @@ export interface Project {
   name: string;
   description: string;
   skills: string;
+}
+
+export type ScholarshipStatus = "saved" | "applied" | "won" | "rejected";
+
+export interface TrackedScholarship {
+  scholarshipId: string;
+  status: ScholarshipStatus;
+  dateAdded: string;
+  dateUpdated: string;
+  notes: string;
 }
 
 export interface Scholarship {

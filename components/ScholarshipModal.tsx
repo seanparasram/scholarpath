@@ -16,6 +16,7 @@ import {
 import { Scholarship, StudentProfile } from "@/lib/types";
 import WritingAssistant from "./WritingAssistant";
 import RoadmapView from "./RoadmapView";
+import ScholarshipTracker from "./ScholarshipTracker";
 
 interface Props {
   scholarship: Scholarship | null;
@@ -341,8 +342,9 @@ export default function ScholarshipModal({ scholarship, profile, onClose }: Prop
           )}
         </div>
 
-        {/* Footer CTA */}
-        <div className="flex-shrink-0 border-t border-slate-100 px-6 py-4 bg-white">
+        {/* Footer */}
+        <div className="flex-shrink-0 border-t border-slate-100 px-6 py-4 bg-white space-y-3">
+          <ScholarshipTracker scholarshipId={scholarship.id} />
           <a
             href={scholarship.applicationUrl}
             target="_blank"
