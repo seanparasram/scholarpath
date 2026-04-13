@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
-const LEADS_FILE = path.join(process.cwd(), "data", "leads.json");
-
-// Simple password protection — set ADMIN_PASSWORD in .env.local
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "scholarpath-admin";
 
 export async function GET(req: NextRequest) {
@@ -17,8 +14,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const raw = fs.readFileSync(LEADS_FILE, "utf-8");
-    const leads = JSON.parse(raw);
+    const leadsRef = collection(db, "leads");
+    const q = query(leadsRef, orderBy("submittedAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    const leads = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     if (format === "csv") {
       if (leads.length === 0) {
@@ -47,14 +50,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({
-      total: leads.length,
-      leads: leads.sort(
-        (a: { submittedAt: string }, b: { submittedAt: string }) =>
-          new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
-      ),
-    });
-  } catch {
+    return NextResponse.json({ total: leads.length, leads });
+  } catch (err) {
+    console.error("Leads list error:", err);
     return NextResponse.json({ error: "Could not read leads" }, { status: 500 });
   }
 }
