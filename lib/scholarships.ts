@@ -929,7 +929,7 @@ export const SCHOLARSHIPS: Scholarship[] = [
     amount: "Up to full tuition",
     amountNumeric: 15000,
     deadline: "Varies by school",
-    deadlineDate: "2026-04-01",
+    deadlineDate: "2027-04-01",
     description:
       "Provides financial assistance to Texas residents with financial need who graduate from a Texas high school.",
     eligibility: {
@@ -1384,7 +1384,7 @@ export const SCHOLARSHIPS: Scholarship[] = [
     amount: "$2,500–$10,000",
     amountNumeric: 10000,
     deadline: "Varies",
-    deadlineDate: "2026-04-01",
+    deadlineDate: "2027-04-01",
     description: "Multiple scholarships for students pursuing nursing degrees, including specialty tracks in pediatrics, oncology, and critical care.",
     eligibility: { minGpa: 3.0, description: "Students enrolled in BSN programs at AACN member institutions." },
     essayPrompts: [{ prompt: "Why did you choose nursing, and what area of nursing are you most passionate about?", wordLimit: 500 }],

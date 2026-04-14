@@ -163,7 +163,11 @@ async function scrapeScholarshipsCom(): Promise<ScrapedScholarship[]> {
     const monthNum = i + 1;
     results.push(...extractScholarships(html, "scholarships.com", "https://www.scholarships.com", {
       deadline: month.charAt(0).toUpperCase() + month.slice(1),
-      deadlineDate: `2026-${String(monthNum).padStart(2, "0")}-15`,
+      deadlineDate: (() => {
+        const now = new Date();
+        const year = monthNum > now.getMonth() + 1 ? now.getFullYear() : now.getFullYear() + 1;
+        return `${year}-${String(monthNum).padStart(2, "0")}-15`;
+      })(),
     }));
   });
 

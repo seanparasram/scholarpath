@@ -72,18 +72,32 @@ export default function ScholarshipModal({ scholarship, profile, onClose }: Prop
 
   if (!scholarship) return null;
 
-  const isDeadlineSoon = () => {
-    if (!scholarship.deadlineDate) return false;
-    const deadline = new Date(scholarship.deadlineDate);
+  // Roll past deadlines to next annual occurrence
+  const getNextDeadline = (): Date | null => {
+    if (!scholarship.deadlineDate) return null;
+    const stored = new Date(scholarship.deadlineDate);
     const now = new Date();
-    const diffDays = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    if (stored >= now) return stored;
+    let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
+    while (candidate < now) {
+      candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+    }
+    return candidate;
+  };
+  const nextDeadline = getNextDeadline();
+
+  const isDeadlineSoon = () => {
+    if (!nextDeadline) return false;
+    const now = new Date();
+    const diffDays = (nextDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays >= 0 && diffDays <= 30;
   };
 
-  const isPast = () => {
-    if (!scholarship.deadlineDate) return false;
-    return new Date(scholarship.deadlineDate) < new Date();
-  };
+  const isPast = () => false; // Always roll to next occurrence
+
+  const deadlineText = nextDeadline
+    ? nextDeadline.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : scholarship.deadline;
 
   return (
     <div
@@ -145,7 +159,7 @@ export default function ScholarshipModal({ scholarship, profile, onClose }: Prop
               <div>
                 <p className="text-xs text-slate-500 font-medium">Deadline</p>
                 <p className={`text-sm font-bold ${isPast() ? "text-red-700" : isDeadlineSoon() ? "text-amber-700" : "text-slate-900"}`}>
-                  {isPast() ? "Passed" : isDeadlineSoon() ? `Soon — ${scholarship.deadline}` : scholarship.deadline}
+                  {isDeadlineSoon() ? `Soon · ${deadlineText}` : deadlineText}
                 </p>
               </div>
             </div>

@@ -50,19 +50,31 @@ const CATEGORY_COLORS: Record<string, string> = {
   education: "bg-yellow-50 text-yellow-700",
 };
 
+// Roll a past deadline to its next annual occurrence
+function getNextOccurrence(dateStr: string): Date {
+  const stored = new Date(dateStr);
+  const now = new Date();
+  if (stored >= now) return stored;
+  // Roll forward year by year until the date is in the future
+  let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
+  while (candidate < now) {
+    candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+  }
+  return candidate;
+}
+
 export default function ScholarshipCard({ scholarship, onClick }: Props) {
+  const nextDeadline = scholarship.deadlineDate ? getNextOccurrence(scholarship.deadlineDate) : null;
+
   const isDeadlineSoon = () => {
-    if (!scholarship.deadlineDate) return false;
-    const deadline = new Date(scholarship.deadlineDate);
+    if (!nextDeadline) return false;
     const now = new Date();
-    const diffDays = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = (nextDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays >= 0 && diffDays <= 30;
   };
 
-  const isPast = () => {
-    if (!scholarship.deadlineDate) return false;
-    return new Date(scholarship.deadlineDate) < new Date();
-  };
+  // With recurring logic, nothing is ever "past" — always show next occurrence
+  const isPast = () => false;
 
   const matchPercent = scholarship.matchScore
     ? Math.min(100, Math.round((scholarship.matchScore / 120) * 100))
@@ -113,7 +125,9 @@ export default function ScholarshipCard({ scholarship, onClick }: Props) {
           <div className={`flex items-center gap-1 ${isPast() ? "text-red-500" : isDeadlineSoon() ? "text-amber-500" : "text-slate-400"}`}>
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-xs font-medium">
-              {isPast() ? "Passed" : scholarship.deadline}
+              {nextDeadline
+                ? nextDeadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                : scholarship.deadline}
             </span>
           </div>
           <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
