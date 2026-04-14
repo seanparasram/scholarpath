@@ -83,6 +83,7 @@ async function fetchPage(url: string): Promise<string | null> {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
     return await res.text();
@@ -91,43 +92,110 @@ async function fetchPage(url: string): Promise<string | null> {
   }
 }
 
-// Source 1: Scholarships.com — all 12 months + major categories + state pages
+function extractScholarships(html: string, source: string, baseUrl: string, defaults: Partial<ScrapedScholarship> = {}): ScrapedScholarship[] {
+  const results: ScrapedScholarship[] = [];
+  const $ = cheerio.load(html);
+
+  $("a").each((_, el) => {
+    const name = $(el).text().trim().replace(/\s+/g, " ");
+    const href = $(el).attr("href") || "";
+    if (!name || name.length < 8 || name.length > 140) return;
+
+    // Must look like a scholarship name
+    const nameLower = name.toLowerCase();
+    const isScholarship = nameLower.includes("scholarship") || nameLower.includes("award") ||
+      nameLower.includes("grant") || nameLower.includes("fellowship") || nameLower.includes("fund") ||
+      nameLower.includes("prize") || nameLower.includes("program");
+    if (!isScholarship) return;
+
+    // Skip navigation links
+    if (/view all|see more|browse|search|find|sign up|log in|how to|best scholarships|top \d/i.test(nameLower)) return;
+
+    const id = `scraped-${source.replace(/\./g, "")}-${nameLower.replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
+    if (results.find((r) => r.id === id)) return;
+
+    const parentText = $(el).parent().text() || "";
+    const detectedAmount = parseAmount(parentText);
+    const fullUrl = href.startsWith("http") ? href : `${baseUrl}${href.startsWith("/") ? "" : "/"}${href}`;
+
+    results.push({
+      id,
+      name,
+      organization: defaults.organization || "Various",
+      amount: detectedAmount > 100 ? `$${detectedAmount.toLocaleString()}` : "Varies",
+      amountNumeric: detectedAmount > 100 ? detectedAmount : 2500,
+      deadline: defaults.deadline || "Varies",
+      deadlineDate: defaults.deadlineDate || "2026-06-30",
+      description: `Scholarship found on ${source}. Visit the application page for full details, eligibility, and deadlines.`,
+      applicationUrl: fullUrl,
+      category: categorize(name, parentText),
+      eligibilityDescription: "Visit application page for full eligibility details.",
+      source,
+      scrapedAt: new Date().toISOString(),
+      state: detectState(name + " " + parentText),
+      ...defaults,
+    });
+  });
+  return results;
+}
+
+// Individual source scrapers — each designed to run within ~8 seconds
+
 async function scrapeScholarshipsCom(): Promise<ScrapedScholarship[]> {
   const results: ScrapedScholarship[] = [];
-  const pages = [
-    // All 12 months
-    ...["january","february","march","april","may","june","july","august","september","october","november","december"].map((m, i) => ({
-      url: `https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/deadline/deadline-in-${m}`,
-      month: m.charAt(0).toUpperCase() + m.slice(1),
-      monthNum: i + 1,
-    })),
+  const months = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+
+  // Fetch 4 month pages in parallel (quick)
+  const batch1 = await Promise.all(
+    months.slice(0, 4).map((m) =>
+      fetchPage(`https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/deadline/deadline-in-${m}`)
+    )
+  );
+  const batch2 = await Promise.all(
+    months.slice(4, 8).map((m) =>
+      fetchPage(`https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/deadline/deadline-in-${m}`)
+    )
+  );
+
+  [...batch1, ...batch2].forEach((html, i) => {
+    if (!html) return;
+    const month = months[i];
+    const monthNum = i + 1;
+    results.push(...extractScholarships(html, "scholarships.com", "https://www.scholarships.com", {
+      deadline: month.charAt(0).toUpperCase() + month.slice(1),
+      deadlineDate: `2026-${String(monthNum).padStart(2, "0")}-15`,
+    }));
+  });
+
+  return results;
+}
+
+async function scrapeScholarshipsComMajors(): Promise<ScrapedScholarship[]> {
+  const results: ScrapedScholarship[] = [];
+  const majors = [
+    "engineering", "computer-science", "business", "nursing", "biology", "education",
+    "environmental-science", "psychology", "communications", "art", "music", "mathematics",
+    "political-science", "chemistry", "physics", "english", "pre-med", "pre-law",
+    "criminal-justice", "finance", "social-work",
   ];
 
-  // Major-specific pages
-  const majorPages = [
-    "academic-major/engineering", "academic-major/computer-science", "academic-major/business",
-    "academic-major/nursing", "academic-major/biology", "academic-major/education",
-    "academic-major/environmental-science", "academic-major/psychology", "academic-major/communications",
-    "academic-major/art", "academic-major/music", "academic-major/mathematics",
-    "academic-major/political-science", "academic-major/chemistry", "academic-major/physics",
-    "academic-major/english", "academic-major/history", "academic-major/sociology",
-    "academic-major/criminal-justice", "academic-major/economics", "academic-major/journalism",
-    "academic-major/pre-med", "academic-major/pre-law", "academic-major/agriculture",
-    "academic-major/architecture", "academic-major/finance", "academic-major/marketing",
-    "academic-major/social-work", "academic-major/theater",
-  ];
+  for (let i = 0; i < majors.length; i += 4) {
+    const batch = majors.slice(i, i + 4);
+    const htmls = await Promise.all(
+      batch.map((m) =>
+        fetchPage(`https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/academic-major/${m}`)
+      )
+    );
+    htmls.forEach((html) => {
+      if (html) results.push(...extractScholarships(html, "scholarships.com", "https://www.scholarships.com"));
+    });
+  }
+  return results;
+}
 
-  // Ethnicity/background pages
-  const backgroundPages = [
-    "ethnicity/african-american", "ethnicity/hispanic", "ethnicity/asian",
-    "ethnicity/native-american", "gender/female", "special-attributes/first-generation-college-students",
-    "special-attributes/community-service", "special-attributes/leadership",
-    "special-attributes/military", "special-attributes/disabilities",
-    "special-attributes/lgbtq",
-  ];
-
-  // State pages
-  const statePages = [
+async function scrapeScholarshipsComStates(): Promise<ScrapedScholarship[]> {
+  const results: ScrapedScholarship[] = [];
+  const states = [
     "alabama","alaska","arizona","arkansas","california","colorado","connecticut","delaware",
     "florida","georgia","hawaii","idaho","illinois","indiana","iowa","kansas","kentucky",
     "louisiana","maine","maryland","massachusetts","michigan","minnesota","mississippi",
@@ -135,61 +203,23 @@ async function scrapeScholarshipsCom(): Promise<ScrapedScholarship[]> {
     "new-york","north-carolina","north-dakota","ohio","oklahoma","oregon","pennsylvania",
     "rhode-island","south-carolina","south-dakota","tennessee","texas","utah","vermont",
     "virginia","washington","west-virginia","wisconsin","wyoming",
-  ].map((s) => `state/${s}`);
-
-  const allUrls = [
-    ...pages.map((p) => ({ url: p.url, month: p.month, monthNum: p.monthNum })),
-    ...majorPages.map((p) => ({ url: `https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/${p}`, month: "Varies", monthNum: 6 })),
-    ...backgroundPages.map((p) => ({ url: `https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/${p}`, month: "Varies", monthNum: 6 })),
-    ...statePages.map((p) => ({ url: `https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/${p}`, month: "Varies", monthNum: 6 })),
   ];
 
-  // Process in batches of 5 to avoid overwhelming the server
-  for (let i = 0; i < allUrls.length; i += 5) {
-    const batch = allUrls.slice(i, i + 5);
-    const htmls = await Promise.all(batch.map((b) => fetchPage(b.url)));
-
-    htmls.forEach((html, idx) => {
-      if (!html) return;
-      const cat = batch[idx];
-      const $ = cheerio.load(html);
-
-      $("a").each((_, el) => {
-        const name = $(el).text().trim();
-        const href = $(el).attr("href") || "";
-        if (!name || name.length < 8 || name.length > 150) return;
-        if (!href.includes("/scholarship-directory/") && !href.includes("/scholarships/")) return;
-        if (href.includes("/deadline/") || href.includes("/academic-major/") || href.includes("/ethnicity/") || href.includes("/state/") || href.includes("/gender/") || href.includes("/special-attributes/")) return;
-        if (name.toLowerCase().includes("view all") || name.toLowerCase().includes("see more") || name.toLowerCase().includes("browse")) return;
-
-        const id = `scraped-sc-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-        if (results.find((r) => r.id === id)) return;
-
-        const stateFromUrl = cat.url.includes("/state/") ? detectState(cat.url.replace(/-/g, " ")) : detectState(name);
-
-        results.push({
-          id,
-          name,
-          organization: "Various",
-          amount: "Varies",
-          amountNumeric: 2500,
-          deadline: cat.month,
-          deadlineDate: `2026-${String(cat.monthNum).padStart(2, "0")}-15`,
-          description: `Scholarship listed on Scholarships.com. Visit the application page for full details, eligibility, and deadlines.`,
-          applicationUrl: href.startsWith("http") ? href : `https://www.scholarships.com${href}`,
-          category: categorize(name, cat.url),
-          eligibilityDescription: "Visit application page for full eligibility details.",
-          source: "scholarships.com",
-          scrapedAt: new Date().toISOString(),
-          state: stateFromUrl,
-        });
-      });
+  // Process 6 states at a time
+  for (let i = 0; i < states.length; i += 6) {
+    const batch = states.slice(i, i + 6);
+    const htmls = await Promise.all(
+      batch.map((s) =>
+        fetchPage(`https://www.scholarships.com/financial-aid/college-scholarships/scholarship-directory/state/${s}`)
+      )
+    );
+    htmls.forEach((html) => {
+      if (html) results.push(...extractScholarships(html, "scholarships.com", "https://www.scholarships.com"));
     });
   }
   return results;
 }
 
-// Source 2: Bold.org — multiple pages
 async function scrapeBoldOrg(): Promise<ScrapedScholarship[]> {
   const results: ScrapedScholarship[] = [];
   const pages = [
@@ -198,315 +228,121 @@ async function scrapeBoldOrg(): Promise<ScrapedScholarship[]> {
     "https://bold.org/scholarships/?page=3",
     "https://bold.org/scholarships/?page=4",
     "https://bold.org/scholarships/?page=5",
-    "https://bold.org/scholarships/by-major/",
-    "https://bold.org/scholarships/by-state/",
     "https://bold.org/scholarships/no-essay/",
   ];
 
-  for (const pageUrl of pages) {
-    const html = await fetchPage(pageUrl);
-    if (!html) continue;
-    const $ = cheerio.load(html);
-
-    $("a[href*='/scholarships/']").each((_, el) => {
-      const name = $(el).text().trim();
-      const href = $(el).attr("href") || "";
-      if (!name || name.length < 5 || name.length > 120) return;
-      if (href === "/scholarships/" || href.includes("?page") || href.includes("/by-")) return;
-      if (name.toLowerCase().includes("view all") || name.toLowerCase().includes("see all") || name.toLowerCase() === "scholarships") return;
-
-      const amountText = $(el).closest("div").text();
-      const amount = parseAmount(amountText);
-
-      const id = `scraped-bold-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-      if (results.find((r) => r.id === id)) return;
-
-      results.push({
-        id,
-        name,
-        organization: "Bold.org",
-        amount: amount > 100 ? `$${amount.toLocaleString()}` : "Varies",
-        amountNumeric: amount > 100 ? amount : 2500,
-        deadline: "Ongoing",
-        deadlineDate: "2026-06-30",
-        description: `Scholarship available on Bold.org. Visit the application page for full details, eligibility, and essay prompts.`,
-        applicationUrl: href.startsWith("http") ? href : `https://bold.org${href}`,
-        category: categorize(name, ""),
-        eligibilityDescription: "Visit Bold.org for full eligibility details.",
-        source: "bold.org",
-        scrapedAt: new Date().toISOString(),
-        state: detectState(name),
-      });
-    });
-  }
+  const htmls = await Promise.all(pages.map(fetchPage));
+  htmls.forEach((html) => {
+    if (html) results.push(...extractScholarships(html, "bold.org", "https://bold.org", { organization: "Bold.org" }));
+  });
   return results;
 }
 
-// Source 3: Scholarships360
 async function scrapeScholarships360(): Promise<ScrapedScholarship[]> {
   const results: ScrapedScholarship[] = [];
   const pages = [
     "https://scholarships360.org/scholarships/",
     "https://scholarships360.org/scholarships/no-essay-scholarships/",
-    "https://scholarships360.org/scholarships/easy-scholarships/",
     "https://scholarships360.org/scholarships/scholarships-for-high-school-seniors/",
     "https://scholarships360.org/scholarships/scholarships-for-college-students/",
     "https://scholarships360.org/scholarships/stem-scholarships/",
     "https://scholarships360.org/scholarships/nursing-scholarships/",
-    "https://scholarships360.org/scholarships/engineering-scholarships/",
-    "https://scholarships360.org/scholarships/business-scholarships/",
+    "https://scholarships360.org/scholarships/environmental-scholarships/",
     "https://scholarships360.org/scholarships/scholarships-for-women/",
-    "https://scholarships360.org/scholarships/scholarships-for-african-americans/",
-    "https://scholarships360.org/scholarships/scholarships-for-hispanics/",
     "https://scholarships360.org/scholarships/first-generation-college-student-scholarships/",
     "https://scholarships360.org/scholarships/community-service-scholarships/",
-    "https://scholarships360.org/scholarships/environmental-scholarships/",
-    "https://scholarships360.org/scholarships/art-scholarships/",
-    "https://scholarships360.org/scholarships/music-scholarships/",
     "https://scholarships360.org/scholarships/full-ride-scholarships/",
     "https://scholarships360.org/scholarships/computer-science-scholarships/",
-    "https://scholarships360.org/scholarships/psychology-scholarships/",
   ];
 
   for (let i = 0; i < pages.length; i += 3) {
     const batch = pages.slice(i, i + 3);
     const htmls = await Promise.all(batch.map(fetchPage));
-
     htmls.forEach((html) => {
-      if (!html) return;
-      const $ = cheerio.load(html);
-
-      $("a").each((_, el) => {
-        const name = $(el).text().trim();
-        const href = $(el).attr("href") || "";
-        if (!name || name.length < 10 || name.length > 120) return;
-        if (!name.toLowerCase().includes("scholarship") && !name.toLowerCase().includes("award") && !name.toLowerCase().includes("grant") && !name.toLowerCase().includes("fellowship") && !name.toLowerCase().includes("program")) return;
-        if (name.toLowerCase().includes("best scholarships") || name.toLowerCase().includes("top scholarships") || name.toLowerCase().includes("how to")) return;
-
-        const id = `scraped-s360-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-        if (results.find((r) => r.id === id)) return;
-
-        const parentText = $(el).parent().text().toLowerCase();
-        const detectedAmount = parseAmount(parentText);
-
-        results.push({
-          id,
-          name,
-          organization: "Various",
-          amount: detectedAmount > 100 ? `$${detectedAmount.toLocaleString()}` : "Varies",
-          amountNumeric: detectedAmount > 100 ? detectedAmount : 2500,
-          deadline: "Varies",
-          deadlineDate: "2026-06-30",
-          description: `Scholarship featured on Scholarships360. Visit the application page for complete details and eligibility.`,
-          applicationUrl: href.startsWith("http") ? href : `https://scholarships360.org${href}`,
-          category: categorize(name, parentText),
-          eligibilityDescription: "Visit application page for full details.",
-          source: "scholarships360.org",
-          scrapedAt: new Date().toISOString(),
-          state: detectState(name),
-        });
-      });
+      if (html) results.push(...extractScholarships(html, "scholarships360.org", "https://scholarships360.org"));
     });
   }
   return results;
 }
 
-// Source 4: Chegg scholarships
-async function scrapeChegg(): Promise<ScrapedScholarship[]> {
-  const results: ScrapedScholarship[] = [];
-  const pages = [
-    "https://www.chegg.com/scholarships",
-    "https://www.chegg.com/scholarships/stem",
-    "https://www.chegg.com/scholarships/business",
-    "https://www.chegg.com/scholarships/arts",
-    "https://www.chegg.com/scholarships/education",
-    "https://www.chegg.com/scholarships/health",
-  ];
-
-  for (const pageUrl of pages) {
-    const html = await fetchPage(pageUrl);
-    if (!html) continue;
-    const $ = cheerio.load(html);
-
-    $("a").each((_, el) => {
-      const name = $(el).text().trim();
-      const href = $(el).attr("href") || "";
-      if (!name || name.length < 8 || name.length > 120) return;
-      if (!name.toLowerCase().includes("scholarship") && !name.toLowerCase().includes("award") && !name.toLowerCase().includes("grant")) return;
-      if (name.toLowerCase().includes("search") || name.toLowerCase().includes("find") || name.toLowerCase().includes("browse")) return;
-
-      const id = `scraped-chegg-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-      if (results.find((r) => r.id === id)) return;
-
-      results.push({
-        id,
-        name,
-        organization: "Various",
-        amount: "Varies",
-        amountNumeric: 2500,
-        deadline: "Varies",
-        deadlineDate: "2026-06-30",
-        description: `Scholarship listed on Chegg. Visit the application page for complete details.`,
-        applicationUrl: href.startsWith("http") ? href : `https://www.chegg.com${href}`,
-        category: categorize(name, pageUrl),
-        eligibilityDescription: "Visit application page for details.",
-        source: "chegg.com",
-        scrapedAt: new Date().toISOString(),
-        state: detectState(name),
-      });
-    });
-  }
-  return results;
-}
-
-// Source 5: Cappex / Appily
-async function scrapeCappex(): Promise<ScrapedScholarship[]> {
-  const results: ScrapedScholarship[] = [];
-  const pages = [
-    "https://www.appily.com/scholarships",
-    "https://www.appily.com/scholarships/no-essay",
-    "https://www.appily.com/scholarships/easy",
-  ];
-
-  for (const pageUrl of pages) {
-    const html = await fetchPage(pageUrl);
-    if (!html) continue;
-    const $ = cheerio.load(html);
-
-    $("a").each((_, el) => {
-      const name = $(el).text().trim();
-      const href = $(el).attr("href") || "";
-      if (!name || name.length < 8 || name.length > 120) return;
-      if (!name.toLowerCase().includes("scholarship") && !name.toLowerCase().includes("award") && !name.toLowerCase().includes("grant")) return;
-
-      const id = `scraped-appily-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-      if (results.find((r) => r.id === id)) return;
-
-      results.push({
-        id,
-        name,
-        organization: "Various",
-        amount: "Varies",
-        amountNumeric: 2500,
-        deadline: "Varies",
-        deadlineDate: "2026-06-30",
-        description: `Scholarship listed on Appily. Visit the application page for full details.`,
-        applicationUrl: href.startsWith("http") ? href : `https://www.appily.com${href}`,
-        category: categorize(name, ""),
-        eligibilityDescription: "Visit application page for details.",
-        source: "appily.com",
-        scrapedAt: new Date().toISOString(),
-        state: detectState(name),
-      });
-    });
-  }
-  return results;
-}
-
-// Source 6: CollegeBoard BigFuture
-async function scrapeCollegeBoard(): Promise<ScrapedScholarship[]> {
-  const results: ScrapedScholarship[] = [];
-  const html = await fetchPage("https://bigfuture.collegeboard.org/scholarship-search");
-  if (!html) return results;
-  const $ = cheerio.load(html);
-
-  $("a").each((_, el) => {
-    const name = $(el).text().trim();
-    const href = $(el).attr("href") || "";
-    if (!name || name.length < 8 || name.length > 120) return;
-    if (!name.toLowerCase().includes("scholarship") && !name.toLowerCase().includes("award") && !name.toLowerCase().includes("grant") && !name.toLowerCase().includes("fund")) return;
-
-    const id = `scraped-cb-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}`;
-    if (results.find((r) => r.id === id)) return;
-
-    results.push({
-      id,
-      name,
-      organization: "Various",
-      amount: "Varies",
-      amountNumeric: 2500,
-      deadline: "Varies",
-      deadlineDate: "2026-06-30",
-      description: `Scholarship from College Board BigFuture. Visit the application page for full details.`,
-      applicationUrl: href.startsWith("http") ? href : `https://bigfuture.collegeboard.org${href}`,
-      category: categorize(name, ""),
-      eligibilityDescription: "Visit application page for details.",
-      source: "collegeboard.org",
-      scrapedAt: new Date().toISOString(),
-      state: detectState(name),
-    });
-  });
-  return results;
-}
-
-export async function POST(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const password = searchParams.get("password");
-
-  if (password !== ADMIN_PASSWORD) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const allResults: ScrapedScholarship[] = [];
-
-  // Run all scrapers in parallel groups
-  const [scholarshipsCom, bold, s360, chegg, cappex, cb] = await Promise.allSettled([
-    scrapeScholarshipsCom(),
-    scrapeBoldOrg(),
-    scrapeScholarships360(),
-    scrapeChegg(),
-    scrapeCappex(),
-    scrapeCollegeBoard(),
-  ]);
-
-  const sources: Record<string, number> = {};
-  const scrapers = [
-    { name: "scholarships.com", result: scholarshipsCom },
-    { name: "bold.org", result: bold },
-    { name: "scholarships360.org", result: s360 },
-    { name: "chegg.com", result: chegg },
-    { name: "appily.com", result: cappex },
-    { name: "collegeboard.org", result: cb },
-  ];
-
-  for (const s of scrapers) {
-    if (s.result.status === "fulfilled") {
-      allResults.push(...s.result.value);
-      sources[s.name] = s.result.value.length;
-    } else {
-      sources[s.name] = 0;
-    }
-  }
-
-  // Deduplicate by name similarity
-  const unique = allResults.filter((s, i, arr) =>
+async function saveResults(results: ScrapedScholarship[]): Promise<{ saved: number; total: number }> {
+  const unique = results.filter((s, i, arr) =>
     arr.findIndex((x) => x.name.toLowerCase().trim() === s.name.toLowerCase().trim()) === i
   );
 
-  // Save to Firestore in batches
   let saved = 0;
   const scrapedRef = collection(db, "scraped_scholarships");
 
   for (const scholarship of unique) {
     try {
-      const existing = await getDocs(
-        query(scrapedRef, where("name", "==", scholarship.name))
-      );
+      const existing = await getDocs(query(scrapedRef, where("name", "==", scholarship.name)));
       if (existing.empty) {
         await setDoc(doc(scrapedRef, scholarship.id), scholarship);
         saved++;
       }
-    } catch (err) {
-      console.error(`Error saving ${scholarship.name}:`, err);
+    } catch {
+      // Skip individual save errors
     }
   }
+  return { saved, total: unique.length };
+}
+
+// POST: Run a specific scraper source (or all sequentially)
+export async function POST(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const password = searchParams.get("password");
+  const source = searchParams.get("source") || "all";
+
+  if (password !== ADMIN_PASSWORD) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let results: ScrapedScholarship[] = [];
+  let sourceName = source;
+
+  try {
+    switch (source) {
+      case "scholarships-deadlines":
+        sourceName = "Scholarships.com (Deadlines)";
+        results = await scrapeScholarshipsCom();
+        break;
+      case "scholarships-majors":
+        sourceName = "Scholarships.com (Majors)";
+        results = await scrapeScholarshipsComMajors();
+        break;
+      case "scholarships-states":
+        sourceName = "Scholarships.com (States)";
+        results = await scrapeScholarshipsComStates();
+        break;
+      case "bold":
+        sourceName = "Bold.org";
+        results = await scrapeBoldOrg();
+        break;
+      case "scholarships360":
+        sourceName = "Scholarships360";
+        results = await scrapeScholarships360();
+        break;
+      default:
+        // Run one quick source as default
+        sourceName = "Scholarships.com (Deadlines)";
+        results = await scrapeScholarshipsCom();
+    }
+  } catch (err) {
+    return NextResponse.json({
+      success: false,
+      error: `Scraper failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      source: sourceName,
+    });
+  }
+
+  const { saved, total } = await saveResults(results);
 
   return NextResponse.json({
     success: true,
-    total_found: unique.length,
+    source: sourceName,
+    total_found: total,
     new_saved: saved,
-    already_existed: unique.length - saved,
-    sources,
+    already_existed: total - saved,
   });
 }
 

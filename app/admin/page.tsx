@@ -154,32 +154,75 @@ export default function AdminPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <h3 className="text-sm font-semibold text-slate-800 mb-2">Scholarship Scraper</h3>
           <p className="text-xs text-slate-500 mb-3">
-            Scrape scholarships from Scholarships.com, Bold.org, and Fastweb. New scholarships are saved to Firestore and shown to users automatically.
+            Run each source individually to avoid timeouts. Click "Run All" to scrape all sources one by one, or run individual sources.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "scholarships-deadlines", label: "Scholarships.com (Deadlines)" },
+                { id: "scholarships-majors", label: "Scholarships.com (Majors)" },
+                { id: "scholarships-states", label: "Scholarships.com (States)" },
+                { id: "bold", label: "Bold.org" },
+                { id: "scholarships360", label: "Scholarships360" },
+              ].map((source) => (
+                <button
+                  key={source.id}
+                  onClick={async (e) => {
+                    const btn = e.currentTarget;
+                    const log = document.getElementById("scrape-log");
+                    btn.disabled = true;
+                    const origText = btn.textContent;
+                    btn.textContent = "Scraping...";
+                    try {
+                      const res = await fetch(`/api/scrape?password=${encodeURIComponent(password)}&source=${source.id}`, { method: "POST" });
+                      const data = await res.json();
+                      if (log) log.textContent += `\n${source.label}: Found ${data.total_found || 0}, saved ${data.new_saved || 0} new`;
+                    } catch {
+                      if (log) log.textContent += `\n${source.label}: Failed (timeout or error)`;
+                    } finally {
+                      btn.disabled = false;
+                      btn.textContent = origText;
+                    }
+                  }}
+                  className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                >
+                  {source.label}
+                </button>
+              ))}
+            </div>
             <button
-              onClick={async () => {
-                const btn = document.getElementById("scrape-btn") as HTMLButtonElement;
-                const status = document.getElementById("scrape-status");
+              onClick={async (e) => {
+                const btn = e.currentTarget;
+                const log = document.getElementById("scrape-log");
                 btn.disabled = true;
-                btn.textContent = "Scraping...";
-                try {
-                  const res = await fetch(`/api/scrape?password=${encodeURIComponent(password)}`, { method: "POST" });
-                  const data = await res.json();
-                  if (status) status.textContent = `Found ${data.total_found} scholarships, ${data.new_saved} new saved. Sources: ${JSON.stringify(data.sources)}`;
-                } catch {
-                  if (status) status.textContent = "Scrape failed. Check console.";
-                } finally {
-                  btn.disabled = false;
-                  btn.textContent = "Run Scraper";
+                btn.textContent = "Running all scrapers...";
+                if (log) log.textContent = "Starting scrape...";
+                const sources = ["scholarships-deadlines", "scholarships-majors", "scholarships-states", "bold", "scholarships360"];
+                let totalFound = 0;
+                let totalSaved = 0;
+                for (const source of sources) {
+                  try {
+                    if (log) log.textContent += `\nScraping ${source}...`;
+                    const res = await fetch(`/api/scrape?password=${encodeURIComponent(password)}&source=${source}`, { method: "POST" });
+                    const data = await res.json();
+                    totalFound += data.total_found || 0;
+                    totalSaved += data.new_saved || 0;
+                    if (log) log.textContent += ` Found ${data.total_found || 0}, saved ${data.new_saved || 0} new`;
+                  } catch {
+                    if (log) log.textContent += ` Failed`;
+                  }
                 }
+                if (log) log.textContent += `\n\nDone! Total: ${totalFound} found, ${totalSaved} new saved.`;
+                btn.disabled = false;
+                btn.textContent = "Run All Scrapers";
               }}
-              id="scrape-btn"
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              Run Scraper
+              Run All Scrapers
             </button>
-            <span id="scrape-status" className="text-xs text-slate-500" />
+            <pre id="scrape-log" className="text-xs text-slate-500 bg-slate-50 rounded-lg p-3 mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap">
+              Ready to scrape. Click a source or "Run All Scrapers".
+            </pre>
           </div>
         </div>
 
