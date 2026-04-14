@@ -2308,14 +2308,16 @@ export function matchScholarships(
         }
       }
 
-      // State match — hard exclude for state-specific if wrong state
+      // State match — hard exclude only for curated state-specific scholarships
       if (eligibility.states && eligibility.states.length > 0) {
         if (profile.state && eligibility.states.includes(profile.state)) {
-          score += 30;
+          score += 30; // Boost for matching state
         } else if (!profile.state) {
           score += 0;
+        } else if (scholarship.id.startsWith("scraped-")) {
+          score -= 10; // Soft penalty for scraped — state detection may be imprecise
         } else {
-          hardExclude = true;
+          hardExclude = true; // Hard exclude for curated state-specific scholarships
         }
       } else {
         score += 5;

@@ -154,37 +154,47 @@ export default function Home() {
   const [loadingScraped, setLoadingScraped] = useState(false);
 
   // Load scraped scholarships from Firestore when results are shown
+  const [scrapedLoaded, setScrapedLoaded] = useState(false);
   useEffect(() => {
-    if (!submitted || scrapedScholarships.length > 0) return;
+    if (!submitted || scrapedLoaded) return;
     setLoadingScraped(true);
+    setScrapedLoaded(true);
     fetch("/api/scrape")
       .then((res) => res.json())
       .then((data) => {
-        const mapped: Scholarship[] = (data.scholarships || []).map((s: Record<string, unknown>) => ({
-          id: s.id as string,
-          name: s.name as string,
-          organization: s.organization as string,
-          amount: s.amount as string,
-          amountNumeric: (s.amountNumeric as number) || 2500,
-          deadline: s.deadline as string,
-          deadlineDate: s.deadlineDate as string,
-          description: s.description as string,
-          eligibility: { description: (s.eligibilityDescription as string) || "Visit application page for details." },
-          essayPrompts: [],
-          applicationUrl: s.applicationUrl as string,
-          category: (s.category as string[]) || ["national"],
-          renewable: false,
-          whatMakesStrongCandidate: ["Visit the application page for full details"],
-          tips: ["Check the official application page for requirements and deadlines"],
-          schoolSpecific: false,
-          majorSpecific: false,
-          matchScore: 0,
-        }));
+        console.log(`Loaded ${data.total} scraped scholarships from database`);
+        const mapped: Scholarship[] = (data.scholarships || []).map((s: Record<string, unknown>) => {
+          const name = (s.name as string) || "";
+          const cats = Array.isArray(s.category) ? (s.category as string[]) : ["national"];
+          const state = s.state as string | undefined;
+          return {
+            id: (s.id as string) || `scraped-${Math.random().toString(36).slice(2)}`,
+            name,
+            organization: (s.organization as string) || "Various",
+            amount: (s.amount as string) || "Varies",
+            amountNumeric: (s.amountNumeric as number) || 2500,
+            deadline: (s.deadline as string) || "Varies",
+            deadlineDate: (s.deadlineDate as string) || "2026-06-30",
+            description: (s.description as string) || `${name}. Visit the application page for full details.`,
+            eligibility: {
+              description: (s.eligibilityDescription as string) || "Visit application page for full eligibility details.",
+              states: state ? [state] : undefined,
+            },
+            essayPrompts: [],
+            applicationUrl: (s.applicationUrl as string) || "",
+            category: cats,
+            renewable: false,
+            whatMakesStrongCandidate: [`Visit the application page for full details about ${name}`],
+            tips: ["Check the official application page for requirements and deadlines"],
+            schoolSpecific: false,
+            majorSpecific: false,
+          } as Scholarship;
+        });
         setScrapedScholarships(mapped);
       })
-      .catch(() => {})
+      .catch((err) => console.error("Failed to load scraped scholarships:", err))
       .finally(() => setLoadingScraped(false));
-  }, [submitted, scrapedScholarships.length]);
+  }, [submitted, scrapedLoaded]);
 
   // Combine static + scraped, then match
   const allScholarships = useMemo(() => {
@@ -210,15 +220,20 @@ export default function Home() {
   // Search across name, org, description, majors, categories
   const searchScholarship = (s: Scholarship, q: string): boolean => {
     const ql = q.toLowerCase();
-    return (
-      s.name.toLowerCase().includes(ql) ||
-      s.organization.toLowerCase().includes(ql) ||
-      s.description.toLowerCase().includes(ql) ||
-      s.category.some((c) => c.includes(ql)) ||
-      (s.specificMajors || []).some((m) => m.toLowerCase().includes(ql)) ||
-      s.whatMakesStrongCandidate.some((w) => w.toLowerCase().includes(ql)) ||
-      s.eligibility.description.toLowerCase().includes(ql)
-    );
+    const words = ql.split(/\s+/).filter((w) => w.length > 2);
+    const searchText = [
+      s.name || "",
+      s.organization || "",
+      s.description || "",
+      ...(s.category || []),
+      ...(s.specificMajors || []),
+      ...(s.whatMakesStrongCandidate || []),
+      s.eligibility?.description || "",
+      ...(s.tips || []),
+    ].join(" ").toLowerCase();
+
+    // Match if the full query or any individual word (3+ chars) appears
+    return searchText.includes(ql) || words.some((w) => searchText.includes(w));
   };
 
   const filteredScholarships = useMemo(() => {
@@ -245,7 +260,12 @@ export default function Home() {
     if (!filters.showExpired) {
       results = results.filter((s) => {
         if (!s.deadlineDate) return true;
-        return new Date(s.deadlineDate) >= new Date();
+        // Treat deadlines as recurring annually — check if the month/day has passed this year
+        const deadline = new Date(s.deadlineDate);
+        const now = new Date();
+        const thisYear = new Date(now.getFullYear(), deadline.getMonth(), deadline.getDate());
+        const nextYear = new Date(now.getFullYear() + 1, deadline.getMonth(), deadline.getDate());
+        return thisYear >= now || nextYear >= now;
       });
     }
 
