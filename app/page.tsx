@@ -184,6 +184,7 @@ export default function Home() {
             applicationUrl: (s.applicationUrl as string) || "",
             category: cats,
             renewable: false,
+            recurrence: "unknown",
             whatMakesStrongCandidate: [`Visit the application page for full details about ${name}`],
             tips: ["Check the official application page for requirements and deadlines"],
             schoolSpecific: false,

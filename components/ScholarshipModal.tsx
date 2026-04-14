@@ -72,32 +72,40 @@ export default function ScholarshipModal({ scholarship, profile, onClose }: Prop
 
   if (!scholarship) return null;
 
-  // Roll past deadlines to next annual occurrence
-  const getNextDeadline = (): Date | null => {
-    if (!scholarship.deadlineDate) return null;
+  // Derive display deadline based on recurrence
+  const getDisplayDeadline = (): { date: Date | null; label: string; isEstimated: boolean; isClosed: boolean } => {
+    if (!scholarship.deadlineDate) return { date: null, label: scholarship.deadline, isEstimated: false, isClosed: false };
     const stored = new Date(scholarship.deadlineDate);
     const now = new Date();
-    if (stored >= now) return stored;
-    let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
-    while (candidate < now) {
-      candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+    const rec = scholarship.recurrence || "unknown";
+
+    if (stored >= now) {
+      return { date: stored, label: stored.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), isEstimated: false, isClosed: false };
     }
-    return candidate;
+    if (rec === "annual") {
+      let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
+      while (candidate < now) candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+      return { date: candidate, label: candidate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), isEstimated: false, isClosed: false };
+    }
+    if (rec === "monthly" || rec === "ongoing") {
+      return { date: null, label: scholarship.deadline, isEstimated: false, isClosed: false };
+    }
+    if (rec === "one-time") {
+      return { date: stored, label: "Application window closed", isEstimated: false, isClosed: true };
+    }
+    return { date: stored, label: scholarship.deadline, isEstimated: true, isClosed: false };
   };
-  const nextDeadline = getNextDeadline();
+  const deadline = getDisplayDeadline();
 
   const isDeadlineSoon = () => {
-    if (!nextDeadline) return false;
+    if (!deadline.date || deadline.isClosed) return false;
     const now = new Date();
-    const diffDays = (nextDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = (deadline.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays >= 0 && diffDays <= 30;
   };
 
-  const isPast = () => false; // Always roll to next occurrence
-
-  const deadlineText = nextDeadline
-    ? nextDeadline.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
-    : scholarship.deadline;
+  const isPast = () => deadline.isClosed;
+  const deadlineText = deadline.label;
 
   return (
     <div

@@ -50,31 +50,48 @@ const CATEGORY_COLORS: Record<string, string> = {
   education: "bg-yellow-50 text-yellow-700",
 };
 
-// Roll a past deadline to its next annual occurrence
-function getNextOccurrence(dateStr: string): Date {
-  const stored = new Date(dateStr);
+function getDisplayDeadline(scholarship: Props["scholarship"]): { date: Date | null; label: string; isEstimated: boolean } {
+  if (!scholarship.deadlineDate) return { date: null, label: scholarship.deadline, isEstimated: false };
+  const stored = new Date(scholarship.deadlineDate);
   const now = new Date();
-  if (stored >= now) return stored;
-  // Roll forward year by year until the date is in the future
-  let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
-  while (candidate < now) {
-    candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+  const rec = scholarship.recurrence || "unknown";
+
+  // Upcoming — show as-is
+  if (stored >= now) {
+    return { date: stored, label: stored.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), isEstimated: false };
   }
-  return candidate;
+
+  // Past deadline — handle per recurrence type
+  if (rec === "annual") {
+    let candidate = new Date(now.getFullYear(), stored.getMonth(), stored.getDate());
+    while (candidate < now) candidate = new Date(candidate.getFullYear() + 1, stored.getMonth(), stored.getDate());
+    return { date: candidate, label: candidate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), isEstimated: false };
+  }
+  if (rec === "monthly" || rec === "ongoing") {
+    return { date: null, label: scholarship.deadline, isEstimated: false };
+  }
+  if (rec === "one-time") {
+    return { date: stored, label: "Closed", isEstimated: false };
+  }
+  // Unknown — show original, flag as needing verification
+  return { date: stored, label: scholarship.deadline, isEstimated: true };
 }
 
 export default function ScholarshipCard({ scholarship, onClick }: Props) {
-  const nextDeadline = scholarship.deadlineDate ? getNextOccurrence(scholarship.deadlineDate) : null;
+  const deadline = getDisplayDeadline(scholarship);
 
   const isDeadlineSoon = () => {
-    if (!nextDeadline) return false;
+    if (!deadline.date) return false;
     const now = new Date();
-    const diffDays = (nextDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = (deadline.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays >= 0 && diffDays <= 30;
   };
 
-  // With recurring logic, nothing is ever "past" — always show next occurrence
-  const isPast = () => false;
+  const isPast = () => {
+    // Only mark as past for one-time scholarships that are over, or unknown-recurrence dates that are old
+    if (scholarship.recurrence === "one-time") return deadline.date ? deadline.date < new Date() : false;
+    return false;
+  };
 
   const matchPercent = scholarship.matchScore
     ? Math.min(100, Math.round((scholarship.matchScore / 120) * 100))
@@ -125,9 +142,8 @@ export default function ScholarshipCard({ scholarship, onClick }: Props) {
           <div className={`flex items-center gap-1 ${isPast() ? "text-red-500" : isDeadlineSoon() ? "text-amber-500" : "text-slate-400"}`}>
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-xs font-medium">
-              {nextDeadline
-                ? nextDeadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                : scholarship.deadline}
+              {deadline.label}
+              {deadline.isEstimated && <span className="ml-1 text-slate-400">· verify</span>}
             </span>
           </div>
           <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />

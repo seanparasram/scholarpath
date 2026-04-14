@@ -76,6 +76,8 @@ export interface Scholarship {
   category: ScholarshipCategory[];
   renewable: boolean;
   renewalInfo?: string;
+  // How the scholarship program itself recurs (separate from `renewable` which is about a single student's multi-year funding)
+  recurrence?: "annual" | "monthly" | "ongoing" | "one-time" | "unknown";
   whatMakesStrongCandidate: string[];
   tips: string[];
   schoolSpecific: boolean;
