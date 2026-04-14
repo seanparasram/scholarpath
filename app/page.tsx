@@ -237,10 +237,19 @@ export default function Home() {
   };
 
   const filteredScholarships = useMemo(() => {
-    let results = matchedScholarships;
+    // When searching, search ALL scholarships (not just profile-matched ones)
+    // so users can discover scholarships outside their initial match
+    let results = searchQuery ? allScholarships : matchedScholarships;
 
     if (searchQuery) {
       results = results.filter((s) => searchScholarship(s, searchQuery));
+      // Sort search results: profile-matched ones first, then others
+      const matchedIds = new Set(matchedScholarships.map((s) => s.id));
+      results.sort((a, b) => {
+        const aMatched = matchedIds.has(a.id) ? 1 : 0;
+        const bMatched = matchedIds.has(b.id) ? 1 : 0;
+        return bMatched - aMatched;
+      });
     }
 
     if (filters.majorSpecific) {
@@ -274,7 +283,8 @@ export default function Home() {
     );
 
     return results;
-  }, [matchedScholarships, searchQuery, filters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchedScholarships, allScholarships, searchQuery, filters]);
 
   const updateProfile = (field: keyof StudentProfile, value: unknown) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -1153,7 +1163,7 @@ export default function Home() {
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div className="absolute z-30 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-72 overflow-y-auto">
                     {filteredSuggestions.map((s) => {
-                      const matchCount = matchedScholarships.filter((sch) =>
+                      const matchCount = allScholarships.filter((sch) =>
                         s.keywords.some((k) => searchScholarship(sch, k))
                       ).length;
                       return (
