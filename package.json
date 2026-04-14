@@ -10,6 +10,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
     "@netlify/plugin-nextjs": "^5.15.9",
+    "cheerio": "^1.2.0",
     "firebase": "^12.12.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",

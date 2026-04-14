@@ -150,6 +150,39 @@ export default function AdminPage() {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Scraper controls */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <h3 className="text-sm font-semibold text-slate-800 mb-2">Scholarship Scraper</h3>
+          <p className="text-xs text-slate-500 mb-3">
+            Scrape scholarships from Scholarships.com, Bold.org, and Fastweb. New scholarships are saved to Firestore and shown to users automatically.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={async () => {
+                const btn = document.getElementById("scrape-btn") as HTMLButtonElement;
+                const status = document.getElementById("scrape-status");
+                btn.disabled = true;
+                btn.textContent = "Scraping...";
+                try {
+                  const res = await fetch(`/api/scrape?password=${encodeURIComponent(password)}`, { method: "POST" });
+                  const data = await res.json();
+                  if (status) status.textContent = `Found ${data.total_found} scholarships, ${data.new_saved} new saved. Sources: ${JSON.stringify(data.sources)}`;
+                } catch {
+                  if (status) status.textContent = "Scrape failed. Check console.";
+                } finally {
+                  btn.disabled = false;
+                  btn.textContent = "Run Scraper";
+                }
+              }}
+              id="scrape-btn"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              Run Scraper
+            </button>
+            <span id="scrape-status" className="text-xs text-slate-500" />
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-4">

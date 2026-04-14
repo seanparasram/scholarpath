@@ -150,9 +150,52 @@ export default function Home() {
     }
   }, [savedProfile, submitted]);
 
+  const [scrapedScholarships, setScrapedScholarships] = useState<Scholarship[]>([]);
+  const [loadingScraped, setLoadingScraped] = useState(false);
+
+  // Load scraped scholarships from Firestore when results are shown
+  useEffect(() => {
+    if (!submitted || scrapedScholarships.length > 0) return;
+    setLoadingScraped(true);
+    fetch("/api/scrape")
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped: Scholarship[] = (data.scholarships || []).map((s: Record<string, unknown>) => ({
+          id: s.id as string,
+          name: s.name as string,
+          organization: s.organization as string,
+          amount: s.amount as string,
+          amountNumeric: (s.amountNumeric as number) || 2500,
+          deadline: s.deadline as string,
+          deadlineDate: s.deadlineDate as string,
+          description: s.description as string,
+          eligibility: { description: (s.eligibilityDescription as string) || "Visit application page for details." },
+          essayPrompts: [],
+          applicationUrl: s.applicationUrl as string,
+          category: (s.category as string[]) || ["national"],
+          renewable: false,
+          whatMakesStrongCandidate: ["Visit the application page for full details"],
+          tips: ["Check the official application page for requirements and deadlines"],
+          schoolSpecific: false,
+          majorSpecific: false,
+          matchScore: 0,
+        }));
+        setScrapedScholarships(mapped);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingScraped(false));
+  }, [submitted, scrapedScholarships.length]);
+
+  // Combine static + scraped, then match
+  const allScholarships = useMemo(() => {
+    const staticIds = new Set(SCHOLARSHIPS.map((s) => s.id));
+    const deduped = scrapedScholarships.filter((s) => !staticIds.has(s.id));
+    return [...SCHOLARSHIPS, ...deduped];
+  }, [scrapedScholarships]);
+
   const matchedScholarships = useMemo(() => {
     if (!submitted) return [];
-    return matchScholarships(SCHOLARSHIPS, {
+    return matchScholarships(allScholarships, {
       gpa: profile.gpa,
       intendedMajor: profile.intendedMajor,
       ethnicity: profile.ethnicity,
@@ -162,7 +205,21 @@ export default function Home() {
       firstGenCollegeStudent: profile.firstGenCollegeStudent,
       citizenshipStatus: profile.citizenshipStatus,
     });
-  }, [submitted, profile]);
+  }, [submitted, profile, allScholarships]);
+
+  // Search across name, org, description, majors, categories
+  const searchScholarship = (s: Scholarship, q: string): boolean => {
+    const ql = q.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(ql) ||
+      s.organization.toLowerCase().includes(ql) ||
+      s.description.toLowerCase().includes(ql) ||
+      s.category.some((c) => c.includes(ql)) ||
+      (s.specificMajors || []).some((m) => m.toLowerCase().includes(ql)) ||
+      s.whatMakesStrongCandidate.some((w) => w.toLowerCase().includes(ql)) ||
+      s.eligibility.description.toLowerCase().includes(ql)
+    );
+  };
 
   const filteredScholarships = useMemo(() => {
     let results = matchedScholarships;
@@ -339,20 +396,6 @@ export default function Home() {
         s.keywords.some((k) => k.includes(searchQuery.toLowerCase()))
       )
     : KEYWORD_SUGGESTIONS;
-
-  // Search across name, org, description, majors, categories
-  const searchScholarship = (s: Scholarship, q: string): boolean => {
-    const ql = q.toLowerCase();
-    return (
-      s.name.toLowerCase().includes(ql) ||
-      s.organization.toLowerCase().includes(ql) ||
-      s.description.toLowerCase().includes(ql) ||
-      s.category.some((c) => c.includes(ql)) ||
-      (s.specificMajors || []).some((m) => m.toLowerCase().includes(ql)) ||
-      s.whatMakesStrongCandidate.some((w) => w.toLowerCase().includes(ql)) ||
-      s.eligibility.description.toLowerCase().includes(ql)
-    );
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -1200,6 +1243,8 @@ export default function Home() {
                 </h2>
                 <p className="text-sm text-slate-500">
                   Sorted by best match for your profile
+                  {loadingScraped && " · Loading more scholarships..."}
+                  {scrapedScholarships.length > 0 && ` · ${scrapedScholarships.length} additional from our database`}
                 </p>
               </div>
               {matchedScholarships.length > 0 && (
