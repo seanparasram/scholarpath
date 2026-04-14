@@ -72,7 +72,7 @@ export default function AuthModal({ onClose }: Props) {
               <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
                 <GraduationCap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-slate-900">ScholarPath</span>
+              <span className="font-bold text-slate-900">Scholarship Route</span>
             </div>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
               <X className="w-5 h-5" />

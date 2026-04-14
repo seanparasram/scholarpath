@@ -1711,6 +1711,547 @@ export const SCHOLARSHIPS: Scholarship[] = [
     majorSpecific: true,
     specificMajors: ["Nursing", "Pre-Medicine", "Public Health", "Pharmacy", "Physician Assistant"],
   },
+
+  // ─── ENVIRONMENT & SUSTAINABILITY ─────────────────────────────────────────────
+  {
+    id: "epa-environmental",
+    name: "EPA Greater Research Opportunities Fellowship",
+    organization: "U.S. Environmental Protection Agency",
+    amount: "Up to $50,000",
+    amountNumeric: 50000,
+    deadline: "December",
+    deadlineDate: "2025-12-22",
+    description: "Supports undergraduate students in environmental fields with funding for tuition, research, and a paid internship at an EPA facility.",
+    eligibility: { minGpa: 3.0, description: "Undergrads pursuing environmental science, engineering, or related fields at accredited U.S. institutions. Must be a U.S. citizen.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Describe your environmental research interests and career goals.", wordLimit: 600 }],
+    applicationUrl: "https://www.epa.gov/research-fellowships",
+    category: ["stem", "science", "national"],
+    renewable: true, renewalInfo: "Covers junior and senior year plus summer internship",
+    whatMakesStrongCandidate: ["Environmental research experience", "Strong academics in environmental sciences", "Clear career goals in environmental protection", "Interest in EPA's mission areas"],
+    tips: ["Includes a paid EPA internship which is incredibly valuable for your resume", "Research experience in environmental topics is essential"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Environmental Engineering", "Biology", "Chemistry", "Earth Science", "Ecology", "Sustainability"],
+  },
+  {
+    id: "garden-club-scholarship",
+    name: "Garden Club of America Scholarship",
+    organization: "Garden Club of America",
+    amount: "$4,000–$15,000",
+    amountNumeric: 15000,
+    deadline: "February 1",
+    deadlineDate: "2026-02-01",
+    description: "Multiple scholarships for students in environmental studies, conservation, botany, ecology, forestry, and related green fields.",
+    eligibility: { description: "Undergraduate and graduate students studying environmental science, conservation, ecology, botany, or related fields.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Describe your commitment to environmental conservation and your career plans.", wordLimit: 500 }],
+    applicationUrl: "https://www.gcamerica.org/scholarships",
+    category: ["science", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Passion for environmental conservation", "Field experience in ecology or conservation", "Academic excellence in environmental courses", "Community environmental projects"],
+    tips: ["GCA offers 28 different scholarships — check which ones match your specific focus", "Field research or conservation volunteering strengthens your application"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Ecology", "Biology", "Forestry", "Sustainability", "Conservation Biology", "Botany"],
+  },
+  {
+    id: "udall-scholarship",
+    name: "Udall Scholarship",
+    organization: "Udall Foundation",
+    amount: "Up to $7,000",
+    amountNumeric: 7000,
+    deadline: "March (nominated by school)",
+    deadlineDate: "2026-03-05",
+    description: "Prestigious federal scholarship for sophomores and juniors committed to environmental or Native American tribal policy careers.",
+    eligibility: { minGpa: 3.0, description: "College sophomores or juniors committed to careers in environment, sustainability, or tribal public policy. Must be nominated by your institution.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Describe your commitment to the environment or tribal policy and your career goals in this field.", wordLimit: 800 }],
+    applicationUrl: "https://www.udall.gov",
+    category: ["science", "merit", "national", "leadership"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Deep commitment to environmental or tribal policy careers", "Leadership in environmental organizations", "Research or policy experience", "Faculty nomination"],
+    tips: ["This is a nomination-based scholarship — talk to your environmental studies professors", "One of the most prestigious environmental awards for undergrads"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Environmental Policy", "Sustainability", "Public Policy", "Biology", "Ecology", "Native American Studies"],
+  },
+  {
+    id: "switzer-fellowship",
+    name: "Robert & Patricia Switzer Foundation Fellowship",
+    organization: "Switzer Foundation",
+    amount: "$15,000",
+    amountNumeric: 15000,
+    deadline: "January",
+    deadlineDate: "2026-01-10",
+    description: "For graduate students and advanced undergraduates whose studies focus on environmental improvement, conservation, and sustainability.",
+    eligibility: { description: "Graduate or advanced undergrad students pursuing environmental studies at New England or California institutions." },
+    essayPrompts: [{ prompt: "How will your environmental work create lasting impact?", wordLimit: 600 }],
+    applicationUrl: "https://www.switzernetwork.org",
+    category: ["science", "merit", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Clear environmental leadership vision", "Active environmental projects or research", "Academic excellence", "New England or California institution"],
+    tips: ["Limited to students at New England or California schools", "Strong environmental action portfolio is key"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Sustainability", "Conservation Biology", "Environmental Policy", "Ecology"],
+  },
+  {
+    id: "morris-udall-native-environment",
+    name: "Morris K. Udall Native American Scholarship",
+    organization: "Udall Foundation",
+    amount: "Up to $7,000",
+    amountNumeric: 7000,
+    deadline: "March",
+    deadlineDate: "2026-03-05",
+    description: "For Native American and Alaska Native students pursuing careers in tribal public policy, health care, or the environment.",
+    eligibility: { ethnicities: ["American Indian/Alaska Native"], description: "Native American or Alaska Native sophomores/juniors pursuing environment, tribal policy, or health care careers." },
+    essayPrompts: [{ prompt: "How will your career address environmental or health challenges facing tribal communities?", wordLimit: 800 }],
+    applicationUrl: "https://www.udall.gov",
+    category: ["ethnicity-specific", "science", "health", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Tribal enrollment", "Environmental or health focus", "Community impact", "Faculty nomination"],
+    tips: ["Separate track from the general Udall for non-Native environmental students"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Public Health", "Tribal Policy", "Pre-Medicine", "Sustainability"],
+  },
+  {
+    id: "noaa-hollings",
+    name: "NOAA Hollings Scholarship",
+    organization: "National Oceanic and Atmospheric Administration",
+    amount: "$19,000 + paid internship",
+    amountNumeric: 19000,
+    deadline: "January 31",
+    deadlineDate: "2026-01-31",
+    description: "Provides academic support and a paid 10-week summer internship at a NOAA facility for students in oceanic, atmospheric, or environmental sciences.",
+    eligibility: { minGpa: 3.0, description: "College sophomores pursuing degrees in atmospheric, oceanic, environmental, biological, or STEM sciences at accredited U.S. institutions.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "How does your academic and career plan align with NOAA's mission?", wordLimit: 500 }],
+    applicationUrl: "https://www.noaa.gov/office-education/hollings-scholarship",
+    category: ["stem", "science", "national"],
+    renewable: true, renewalInfo: "Two years of support plus summer internship",
+    whatMakesStrongCandidate: ["Strong STEM academics focused on ocean/atmosphere/environment", "Research experience", "Clear alignment with NOAA's mission", "Interest in federal science careers"],
+    tips: ["The paid NOAA internship is the real prize here — incredible experience", "Apply as a sophomore for junior/senior year funding"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Marine Biology", "Atmospheric Science", "Oceanography", "Biology", "Chemistry", "Physics", "Earth Science", "Ecology"],
+  },
+  {
+    id: "sierra-club-fellowship",
+    name: "Sierra Club Conservation Fellowship",
+    organization: "Sierra Club Foundation",
+    amount: "$5,000–$10,000",
+    amountNumeric: 10000,
+    deadline: "March",
+    deadlineDate: "2026-03-15",
+    description: "Supports students passionate about conservation, environmental justice, and outdoor advocacy.",
+    eligibility: { description: "Students demonstrating leadership in environmental conservation and justice. No specific GPA requirement." },
+    essayPrompts: [{ prompt: "Describe your environmental advocacy work and its impact on your community.", wordLimit: 500 }],
+    applicationUrl: "https://www.sierraclub.org",
+    category: ["community-service", "science", "social-justice", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Active environmental advocacy or organizing", "Environmental justice focus", "Community impact", "Outdoor leadership experience"],
+    tips: ["Environmental justice and equity angle strengthens applications significantly"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Environmental Science", "Sustainability", "Environmental Policy", "Ecology", "Social Justice", "Public Policy"],
+  },
+
+  // ─── MORE UNIVERSAL / OPEN SCHOLARSHIPS ────────────────────────────────────────
+  {
+    id: "scholarshipowl",
+    name: "ScholarshipOwl No Essay Scholarship",
+    organization: "ScholarshipOwl",
+    amount: "$1,000",
+    amountNumeric: 1000,
+    deadline: "Monthly",
+    deadlineDate: "2026-06-30",
+    description: "Monthly no-essay scholarship open to all students. Just register and you are entered automatically.",
+    eligibility: { description: "U.S. residents 16+ who are enrolled or planning to enroll in college. No GPA or essay required." },
+    essayPrompts: [],
+    applicationUrl: "https://scholarshipowl.com",
+    category: ["national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Simply register — no requirements", "Monthly drawings"],
+    tips: ["Takes 30 seconds to enter", "Combine with other no-essay scholarships"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "bold-scholarship",
+    name: "Bold.org Scholarships",
+    organization: "Bold.org",
+    amount: "$500–$25,000",
+    amountNumeric: 25000,
+    deadline: "Ongoing",
+    deadlineDate: "2026-06-30",
+    description: "Platform hosting hundreds of individual scholarships from donors. New scholarships are added weekly across all majors and backgrounds.",
+    eligibility: { description: "Varies by scholarship. Create one profile and apply to many. Most have no minimum GPA." },
+    essayPrompts: [{ prompt: "Varies by scholarship — typically short essay prompts.", wordLimit: 500 }],
+    applicationUrl: "https://bold.org",
+    category: ["national", "merit"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Active Bold.org profile", "Apply to multiple scholarships on the platform", "Short, compelling essays"],
+    tips: ["Create one profile and you can apply to hundreds of scholarships", "New scholarships are added every week — check back often"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "cappex-easy-money",
+    name: "Cappex Easy Money Scholarship",
+    organization: "Cappex",
+    amount: "$1,000",
+    amountNumeric: 1000,
+    deadline: "Monthly",
+    deadlineDate: "2026-06-30",
+    description: "Monthly scholarship requiring only a short answer about why you deserve it. Open to all students.",
+    eligibility: { description: "High school and college students in the U.S. No GPA requirement." },
+    essayPrompts: [{ prompt: "Why do you deserve this scholarship? (short response)", wordLimit: 200 }],
+    applicationUrl: "https://www.cappex.com/scholarships",
+    category: ["national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Short, genuine response", "No GPA or test score requirements"],
+    tips: ["Very short application — apply in under 5 minutes"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "going-merry",
+    name: "Going Merry Scholarship",
+    organization: "Going Merry",
+    amount: "$1,000–$10,000",
+    amountNumeric: 10000,
+    deadline: "Ongoing",
+    deadlineDate: "2026-06-30",
+    description: "Scholarship platform that matches you with relevant scholarships based on your profile. Apply to many with one application.",
+    eligibility: { description: "U.S. students. Create a profile and get matched with relevant scholarships automatically." },
+    essayPrompts: [{ prompt: "Varies by scholarship.", wordLimit: 500 }],
+    applicationUrl: "https://www.goingmerry.com",
+    category: ["national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Complete profile for better matching", "Apply to all matched scholarships"],
+    tips: ["One profile, many applications — very efficient"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "fastweb-scholarship",
+    name: "Fastweb Featured Scholarships",
+    organization: "Fastweb",
+    amount: "$500–$10,000",
+    amountNumeric: 10000,
+    deadline: "Ongoing",
+    deadlineDate: "2026-06-30",
+    description: "One of the largest scholarship search engines, hosting thousands of scholarships. Create a profile for personalized matches.",
+    eligibility: { description: "All students. Create a free profile and get matched with scholarships from their database of 1.5 million awards." },
+    essayPrompts: [],
+    applicationUrl: "https://www.fastweb.com",
+    category: ["national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Complete and detailed profile", "Check regularly for new matches"],
+    tips: ["The largest scholarship database available — use alongside Scholarship Route"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "be-bold-scholarship",
+    name: "Be Bold Scholarship",
+    organization: "Bold.org",
+    amount: "$25,000",
+    amountNumeric: 25000,
+    deadline: "Varies",
+    deadlineDate: "2026-06-30",
+    description: "Large annual scholarship for students who are bold in their pursuits. Judged on ambition, drive, and a compelling personal story.",
+    eligibility: { description: "All students. No GPA minimum. Judged on boldness of your goals and story." },
+    essayPrompts: [{ prompt: "Describe your boldest achievement, project, or goal.", wordLimit: 500 }],
+    applicationUrl: "https://bold.org/scholarships/be-bold",
+    category: ["merit", "national", "leadership"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Ambitious, unique goals", "Compelling personal story", "Demonstrated action toward bold goals"],
+    tips: ["Think big — this scholarship rewards ambition over GPA"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "foot-locker-scholarship",
+    name: "Foot Locker Scholar Athletes",
+    organization: "Foot Locker Foundation",
+    amount: "$20,000",
+    amountNumeric: 20000,
+    deadline: "December",
+    deadlineDate: "2025-12-20",
+    description: "For student-athletes who demonstrate academic excellence, strong character, and community leadership.",
+    eligibility: { minGpa: 3.0, description: "High school seniors who are student-athletes with a 3.0+ GPA and community involvement.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "How has being a student-athlete shaped your character and leadership?", wordLimit: 500 }],
+    applicationUrl: "https://www.footlockerscholarathletes.com",
+    category: ["athletics", "leadership", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Varsity athlete with strong academics", "Community leadership", "Character and sportsmanship", "3.0+ GPA"],
+    tips: ["You do not need to be a star athlete — character and community matter more than stats"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "amazon-scholarship-wsi",
+    name: "Amazon Women in Innovation Scholarship",
+    organization: "Amazon",
+    amount: "$10,000/year",
+    amountNumeric: 10000,
+    deadline: "October",
+    deadlineDate: "2025-10-31",
+    description: "For women pursuing STEM degrees. Includes Amazon mentorship and a summer internship opportunity.",
+    eligibility: { minGpa: 3.0, genders: ["Female", "Non-binary"], description: "Women and non-binary students pursuing STEM degrees as freshmen or sophomores at select partner universities." },
+    essayPrompts: [{ prompt: "What inspires you about technology, and how do you plan to innovate?", wordLimit: 500 }],
+    applicationUrl: "https://www.amazonfutureengineer.com",
+    category: ["stem", "national"],
+    renewable: true, renewalInfo: "Renewable annually for up to 4 years",
+    whatMakesStrongCandidate: ["Women/non-binary in STEM", "Innovation mindset", "Technical projects", "Leadership in tech communities"],
+    tips: ["Includes mentorship from an Amazon employee which is extremely valuable"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Computer Science", "Engineering", "Mathematics", "Information Technology", "Software Engineering"],
+  },
+  {
+    id: "wells-fargo-scholarship",
+    name: "Wells Fargo Scholarship Program",
+    organization: "Wells Fargo Foundation",
+    amount: "Up to $3,000",
+    amountNumeric: 3000,
+    deadline: "February",
+    deadlineDate: "2026-02-28",
+    description: "For students from underserved communities pursuing any degree. Focuses on financial need and academic potential.",
+    eligibility: { description: "Students from underserved communities with demonstrated financial need. Must plan to attend a 2-year or 4-year accredited U.S. institution." },
+    essayPrompts: [{ prompt: "How will a college education change the trajectory of your life and community?", wordLimit: 400 }],
+    applicationUrl: "https://www.wellsfargo.com/about/corporate-responsibility/community-giving/education",
+    category: ["need-based", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Financial need", "First-generation or underserved background", "Community involvement", "Academic potential"],
+    tips: ["Open to all majors and backgrounds with financial need"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "golden-door-scholarship",
+    name: "Golden Door Scholars Program",
+    organization: "Golden Door Scholars",
+    amount: "Full tuition",
+    amountNumeric: 40000,
+    deadline: "January 31",
+    deadlineDate: "2026-01-31",
+    description: "Full-tuition scholarship for DACA students. Partners with specific colleges to provide comprehensive support.",
+    eligibility: { minGpa: 3.0, description: "DACA recipients with strong academics. Must apply to and attend a Golden Door partner institution." },
+    essayPrompts: [{ prompt: "How has your immigration experience shaped your academic and career goals?", wordLimit: 500 }],
+    applicationUrl: "https://www.goldendoorscholars.org",
+    category: ["need-based", "national"],
+    renewable: true, renewalInfo: "Full tuition for 4 years at partner school",
+    whatMakesStrongCandidate: ["DACA status", "Strong academics (3.0+ GPA)", "Community involvement", "Clear career goals"],
+    tips: ["Must attend a Golden Door partner school — check the list early", "One of the best options for undocumented students alongside TheDream.US"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "daughters-american-revolution",
+    name: "DAR Scholarship Program",
+    organization: "Daughters of the American Revolution",
+    amount: "$2,500–$30,000",
+    amountNumeric: 30000,
+    deadline: "January 31",
+    deadlineDate: "2026-01-31",
+    description: "Over 50 different scholarship programs covering many majors, from nursing to history to political science. No DAR membership required.",
+    eligibility: { description: "U.S. citizens attending accredited U.S. colleges. Varies by specific scholarship — over 50 available.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Varies by specific scholarship program.", wordLimit: 500 }],
+    applicationUrl: "https://www.dar.org/national-society/scholarships",
+    category: ["merit", "national"],
+    renewable: true, renewalInfo: "Many are renewable",
+    whatMakesStrongCandidate: ["Academic excellence", "Patriotism and civic involvement", "Financial need (for some)", "Major-specific qualifications"],
+    tips: ["Over 50 scholarships means there is likely one for your major", "No DAR membership required to apply"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "soroptimist-live-dream",
+    name: "Soroptimist Live Your Dream Award",
+    organization: "Soroptimist International",
+    amount: "$5,000–$10,000",
+    amountNumeric: 10000,
+    deadline: "November 15",
+    deadlineDate: "2025-11-15",
+    description: "For women who are the primary financial support for their families and are pursuing education or job training to improve their lives.",
+    eligibility: { genders: ["Female"], description: "Women who are primary financial providers for their families and are pursuing education to improve their economic situation." },
+    essayPrompts: [{ prompt: "How will education help you achieve your career and life goals?", wordLimit: 500 }],
+    applicationUrl: "https://www.soroptimist.org/our-work/live-your-dream-awards",
+    category: ["need-based", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Financial responsibility for family", "Overcoming hardship", "Clear educational and career plan", "Determined to improve economic situation"],
+    tips: ["Specifically for women who support dependents — non-traditional students welcome"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "sigma-alpha-epsilon",
+    name: "SAE International Scholarship",
+    organization: "SAE International",
+    amount: "$1,000–$10,000",
+    amountNumeric: 10000,
+    deadline: "March 15",
+    deadlineDate: "2026-03-15",
+    description: "For students pursuing engineering or technology degrees with interest in automotive, aerospace, or mobility industries.",
+    eligibility: { minGpa: 3.0, description: "Students pursuing engineering or technology degrees with interest in mobility industries." },
+    essayPrompts: [{ prompt: "How will your engineering career advance mobility technology?", wordLimit: 500 }],
+    applicationUrl: "https://www.sae.org/participate/scholarships",
+    category: ["stem", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Engineering major", "SAE membership", "Automotive/aerospace interest", "Design competition experience"],
+    tips: ["SAE design competitions (Formula SAE, Baja SAE) significantly help"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Engineering", "Mechanical Engineering", "Aerospace Engineering", "Electrical Engineering", "Computer Science"],
+  },
+  {
+    id: "john-lennon-scholarship",
+    name: "John Lennon Scholarship",
+    organization: "BMI Foundation",
+    amount: "$5,000–$10,000",
+    amountNumeric: 10000,
+    deadline: "January",
+    deadlineDate: "2026-01-31",
+    description: "For student songwriters and composers at accredited colleges and universities. Submit original songs for consideration.",
+    eligibility: { description: "Students aged 17-24 attending accredited U.S. colleges who write original music." },
+    essayPrompts: [],
+    applicationUrl: "https://www.bmifoundation.org/john-lennon-scholarships",
+    category: ["arts", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Original songwriting/composing ability", "Quality demo recordings", "Musical training", "Performing experience"],
+    tips: ["Submit your best original song — quality over quantity", "Both lyrics and composition are judged"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Music", "Music Production", "Fine Arts", "Creative Writing"],
+  },
+  {
+    id: "public-relations-society",
+    name: "PRSA Diversity Scholarship",
+    organization: "Public Relations Society of America",
+    amount: "$6,500",
+    amountNumeric: 6500,
+    deadline: "May",
+    deadlineDate: "2026-05-01",
+    description: "For diverse students pursuing communications, public relations, or journalism degrees.",
+    eligibility: { minGpa: 3.0, description: "Underrepresented students pursuing PR, communications, or journalism degrees." },
+    essayPrompts: [{ prompt: "Why is diversity important in the communications industry?", wordLimit: 500 }],
+    applicationUrl: "https://www.prsa.org/scholarships",
+    category: ["humanities", "ethnicity-specific", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Communications/PR major", "Diverse background", "Writing skills", "PR experience or internships"],
+    tips: ["Join your school PRSSA chapter for additional opportunities"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Communications", "Public Relations", "Journalism", "Marketing"],
+  },
+  {
+    id: "aba-legal-opportunity",
+    name: "ABA Legal Opportunity Scholarship",
+    organization: "American Bar Association",
+    amount: "$15,000",
+    amountNumeric: 15000,
+    deadline: "March 1",
+    deadlineDate: "2026-03-01",
+    description: "For diverse students entering law school who have faced financial hardship. Promotes diversity in the legal profession.",
+    eligibility: { description: "First-year law students from diverse backgrounds who demonstrate financial need." },
+    essayPrompts: [{ prompt: "How will your background and experiences contribute to diversity in the legal profession?", wordLimit: 500 }],
+    applicationUrl: "https://www.americanbar.org/groups/diversity/diversity_pipeline/projects_initiatives/legal-opportunity-scholarship",
+    category: ["law", "ethnicity-specific", "need-based", "national"],
+    renewable: true, renewalInfo: "Renewable for 3 years of law school",
+    whatMakesStrongCandidate: ["Diverse background", "Financial need", "Commitment to legal profession", "Overcoming adversity"],
+    tips: ["Must be entering your first year of law school", "Renewable for all 3 years makes total value $45,000"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Law", "Pre-Law", "Political Science", "Criminal Justice"],
+  },
+  {
+    id: "accounting-society",
+    name: "National Society of Accountants Scholarship",
+    organization: "National Society of Accountants",
+    amount: "$500–$2,200",
+    amountNumeric: 2200,
+    deadline: "March 10",
+    deadlineDate: "2026-03-10",
+    description: "For students pursuing accounting or related business degrees. Multiple awards given annually.",
+    eligibility: { minGpa: 3.0, description: "Undergrad students pursuing accounting degrees at accredited U.S. institutions.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Why did you choose accounting, and what are your career goals?", wordLimit: 400 }],
+    applicationUrl: "https://www.nsacct.org/scholarships",
+    category: ["business", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Accounting or finance major", "Strong academics", "Interest in public accounting", "Relevant internship experience"],
+    tips: ["Smaller applicant pool than general scholarships gives better odds"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Accounting", "Finance", "Business"],
+  },
+  {
+    id: "psychology-psi-chi",
+    name: "Psi Chi International Honor Society Grants",
+    organization: "Psi Chi",
+    amount: "$1,000–$5,000",
+    amountNumeric: 5000,
+    deadline: "Varies",
+    deadlineDate: "2026-02-01",
+    description: "Research grants and scholarships for psychology students who are Psi Chi members. Supports undergraduate research projects.",
+    eligibility: { minGpa: 3.0, description: "Psychology majors who are members of Psi Chi honor society. Must be pursuing research in psychology." },
+    essayPrompts: [{ prompt: "Describe your psychology research project and its significance.", wordLimit: 500 }],
+    applicationUrl: "https://www.psichi.org/page/awards",
+    category: ["science", "merit", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Psi Chi membership", "Active psychology research", "Strong GPA in psychology courses", "Faculty mentorship"],
+    tips: ["Join Psi Chi early — it opens many scholarship and research opportunities"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Psychology", "Neuroscience", "Behavioral Science"],
+  },
+  {
+    id: "harry-s-truman",
+    name: "Harry S. Truman Scholarship",
+    organization: "Truman Scholarship Foundation",
+    amount: "$30,000",
+    amountNumeric: 30000,
+    deadline: "February (nominated)",
+    deadlineDate: "2026-02-03",
+    description: "Prestigious scholarship for college juniors who want careers in public service, government, or nonprofit leadership.",
+    eligibility: { minGpa: 3.5, description: "College juniors in the top quarter of their class committed to public service careers. Must be nominated by their institution.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "Describe a public policy issue you are passionate about and your proposed solution.", wordLimit: 600 }],
+    applicationUrl: "https://www.truman.gov",
+    category: ["leadership", "merit", "national", "social-justice"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Commitment to public service career", "Leadership in public service organizations", "Policy knowledge and passion", "Faculty nomination", "Strong academic record"],
+    tips: ["This is for students who want careers in government, policy, or nonprofits", "One of the most prestigious scholarships in the country for public service"],
+    schoolSpecific: false, majorSpecific: true,
+    specificMajors: ["Political Science", "Public Policy", "Government", "International Relations", "Social Work", "Public Health", "Law"],
+  },
+  {
+    id: "benjamin-gilman",
+    name: "Benjamin A. Gilman International Scholarship",
+    organization: "U.S. Department of State",
+    amount: "Up to $5,000",
+    amountNumeric: 5000,
+    deadline: "March/October",
+    deadlineDate: "2026-03-03",
+    description: "Supports Pell Grant recipients to study or intern abroad. Open to all majors. Over 3,000 scholarships awarded annually.",
+    eligibility: { description: "Pell Grant recipients planning to study abroad. U.S. citizens attending 2-year or 4-year institutions.", citizenshipRequired: true },
+    essayPrompts: [{ prompt: "How will studying abroad impact your academic and career goals?", wordLimit: 500 }],
+    applicationUrl: "https://www.gilmanscholarship.org",
+    category: ["need-based", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Pell Grant recipient", "Clear plan for study abroad", "First-generation or underrepresented", "STEM or critical language students get bonus funding"],
+    tips: ["3,000+ awards annually — high acceptance rate compared to most scholarships", "STEM students and critical language learners can receive additional funding"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "discover-student-loans",
+    name: "Discover Student Loans Scholarship",
+    organization: "Discover Financial Services",
+    amount: "$5,000",
+    amountNumeric: 5000,
+    deadline: "Monthly",
+    deadlineDate: "2026-06-30",
+    description: "Monthly scholarship sweepstakes for high school and college students. No essay, no GPA requirement. Just enter.",
+    eligibility: { description: "High school juniors/seniors and college students. 16+ years old. No GPA or essay required." },
+    essayPrompts: [],
+    applicationUrl: "https://www.discover.com/student-loans/scholarships",
+    category: ["national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Simply register — monthly drawing", "No requirements"],
+    tips: ["Enter once and you are in the monthly drawing for the rest of the year"],
+    schoolSpecific: false, majorSpecific: false,
+  },
+  {
+    id: "creative-communications",
+    name: "Creative Communications Poetry Contest",
+    organization: "Creative Communications",
+    amount: "$250–$1,000",
+    amountNumeric: 1000,
+    deadline: "Ongoing",
+    deadlineDate: "2026-06-30",
+    description: "Submit original poetry for scholarship prizes. Open to students of all ages and backgrounds.",
+    eligibility: { description: "All students. Submit one original poem for consideration." },
+    essayPrompts: [{ prompt: "Submit one original poem.", wordLimit: 200 }],
+    applicationUrl: "https://www.poeticpower.com",
+    category: ["arts", "humanities", "national"],
+    renewable: false,
+    whatMakesStrongCandidate: ["Original, well-crafted poetry", "Unique voice and perspective"],
+    tips: ["Very simple application — just submit a poem"],
+    schoolSpecific: false, majorSpecific: false,
+  },
 ];
 
 export function matchScholarships(
@@ -1728,95 +2269,100 @@ export function matchScholarships(
 ): Scholarship[] {
   return scholarships
     .map((scholarship) => {
-      let score = 0;
+      let score = 50; // Start with baseline so most scholarships appear
+      let hardExclude = false;
       const { eligibility } = scholarship;
 
-      // GPA match
+      // GPA match — soft penalty, not exclusion
       if (eligibility.minGpa && profile.gpa) {
         const gpa = parseFloat(profile.gpa);
         if (gpa >= eligibility.minGpa) score += 20;
         else if (gpa >= eligibility.minGpa - 0.3) score += 5;
-        else score -= 30; // Likely ineligible
+        else if (gpa >= eligibility.minGpa - 0.5) score -= 5;
+        else score -= 10; // Well below but still show it
       } else {
         score += 10; // No GPA requirement is a bonus
       }
 
-      // Ethnicity match
+      // Ethnicity match — only hard-exclude if ethnicity-specific and clearly wrong
       if (eligibility.ethnicities && eligibility.ethnicities.length > 0) {
         if (profile.ethnicity && eligibility.ethnicities.includes(profile.ethnicity)) {
-          score += 40;
-        } else if (profile.ethnicity === "Other" || !profile.ethnicity) {
-          score -= 20;
+          score += 40; // Strong match
+        } else if (!profile.ethnicity || profile.ethnicity === "Prefer not to say") {
+          score += 0; // Unknown, still show
         } else {
-          score -= 40; // Not eligible
+          hardExclude = true; // Wrong ethnicity for ethnicity-specific scholarship
         }
       } else {
-        score += 10; // No ethnicity restriction
+        score += 5; // Open to all
       }
 
-      // Gender match
+      // Gender match — only hard-exclude if gender-specific and wrong
       if (eligibility.genders && eligibility.genders.length > 0) {
         if (profile.gender && eligibility.genders.includes(profile.gender)) {
-          score += 25;
-        } else if (!profile.gender) {
+          score += 20;
+        } else if (!profile.gender || profile.gender === "Prefer not to say") {
           score += 0;
         } else {
-          score -= 40; // Not eligible
+          hardExclude = true;
         }
-      } else {
-        score += 5;
       }
 
-      // State match
+      // State match — hard exclude for state-specific if wrong state
       if (eligibility.states && eligibility.states.length > 0) {
         if (profile.state && eligibility.states.includes(profile.state)) {
-          score += 35;
+          score += 30;
+        } else if (!profile.state) {
+          score += 0;
         } else {
-          score -= 50; // State-specific and wrong state
+          hardExclude = true;
         }
       } else {
         score += 5;
       }
 
-      // First-gen match
+      // First-gen — bonus, not penalty
       if (eligibility.firstGenOnly) {
         if (profile.firstGenCollegeStudent) score += 20;
-        else score -= 20;
+        else score -= 5;
       }
 
-      // Citizenship
+      // Citizenship — soft penalty
       if (eligibility.citizenshipRequired) {
         if (profile.citizenshipStatus === "US Citizen" || profile.citizenshipStatus === "Permanent Resident") {
           score += 10;
-        } else {
-          score -= 30;
+        } else if (profile.citizenshipStatus === "International Student") {
+          score -= 15;
         }
       }
 
-      // Major match
+      // Major match — bonus for match, small penalty for mismatch
       if (scholarship.majorSpecific && scholarship.specificMajors && profile.intendedMajor) {
         const majorLower = profile.intendedMajor.toLowerCase();
-        const matchesMajor = scholarship.specificMajors.some(
-          (m) => majorLower.includes(m.toLowerCase()) || m.toLowerCase().includes(majorLower)
-        );
-        if (matchesMajor) score += 30;
-        else score -= 20;
+        const majorWords = majorLower.split(/[\s,/]+/);
+        const matchesMajor = scholarship.specificMajors.some((m) => {
+          const mLower = m.toLowerCase();
+          return majorLower.includes(mLower) || mLower.includes(majorLower) ||
+            majorWords.some((w) => w.length > 3 && mLower.includes(w));
+        });
+        if (matchesMajor) score += 35;
+        else score -= 5; // Small penalty — still show it
+      } else if (!scholarship.majorSpecific) {
+        score += 5; // Open to all majors
       }
 
-      // Income match (basic parsing)
+      // Income match
       if (eligibility.maxHouseholdIncome && profile.householdIncome) {
         const incomeStr = profile.householdIncome;
-        const maxIncome = eligibility.maxHouseholdIncome;
         if (incomeStr === "Under $30,000" || incomeStr === "$30,000–$50,000") {
-          score += 15; // Very likely to qualify
-        } else if (incomeStr === "$50,000–$75,000" && maxIncome.includes("65,000")) {
+          score += 15;
+        } else if (incomeStr === "$50,000–$75,000") {
           score += 5;
-        } else if (incomeStr === "Over $150,000") {
-          score -= 20; // Likely over income limit
         }
       }
 
-      return { ...scholarship, matchScore: Math.max(0, score) };
+      if (hardExclude) return { ...scholarship, matchScore: -1 };
+      return { ...scholarship, matchScore: Math.max(1, score) };
     })
     .filter((s) => (s.matchScore ?? 0) > 0)
     .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));

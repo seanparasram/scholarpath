@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-  title: "ScholarPath — Find Scholarships Built for You",
+  title: "Scholarship Route — Find Scholarships Built for You",
   description:
     "Match with college scholarships based on your profile. AI-powered essay writing assistant included.",
 };

@@ -19,6 +19,9 @@ import {
   LogOut,
   Bookmark,
   School,
+  UserPlus,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 import { StudentProfile, Scholarship, FilterState, Activity, Award, Project, ScholarshipCategory, StudentType } from "@/lib/types";
 import { SCHOLARSHIPS, matchScholarships } from "@/lib/scholarships";
@@ -165,13 +168,7 @@ export default function Home() {
     let results = matchedScholarships;
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      results = results.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) ||
-          s.organization.toLowerCase().includes(q) ||
-          s.description.toLowerCase().includes(q)
-      );
+      results = results.filter((s) => searchScholarship(s, searchQuery));
     }
 
     if (filters.majorSpecific) {
@@ -304,16 +301,69 @@ export default function Home() {
     </button>
   );
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 12;
+  const totalPages = Math.ceil(filteredScholarships.length / PER_PAGE);
+  const paginatedScholarships = filteredScholarships.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [searchQuery, filters, submitted]);
+
+  // Keyword suggestions for search
+  const KEYWORD_SUGGESTIONS = [
+    { label: "Environment & Sustainability", keywords: ["environment", "sustainability", "conservation", "ecology", "climate"] },
+    { label: "Computer Science & Tech", keywords: ["computer", "technology", "software", "engineering", "coding"] },
+    { label: "Business & Finance", keywords: ["business", "finance", "entrepreneur", "accounting", "marketing"] },
+    { label: "Healthcare & Nursing", keywords: ["nursing", "health", "medicine", "medical", "pharmacy"] },
+    { label: "Arts & Music", keywords: ["art", "music", "creative", "writing", "film", "poetry"] },
+    { label: "STEM & Science", keywords: ["stem", "science", "math", "research", "biology", "chemistry", "physics"] },
+    { label: "Law & Government", keywords: ["law", "government", "policy", "political", "justice"] },
+    { label: "Education & Teaching", keywords: ["education", "teaching", "teacher", "tutor"] },
+    { label: "Community Service", keywords: ["community", "service", "volunteer", "nonprofit"] },
+    { label: "Leadership", keywords: ["leadership", "leader", "president", "officer"] },
+    { label: "First-Generation", keywords: ["first-generation", "first gen", "first in family"] },
+    { label: "No Essay Required", keywords: ["no essay", "no gpa", "sweepstakes", "monthly"] },
+    { label: "Full Ride / High Value", keywords: ["full tuition", "full ride", "full cost"] },
+    { label: "Athletics & Sports", keywords: ["athlete", "sports", "athletic", "ncaa"] },
+    { label: "Military & ROTC", keywords: ["military", "rotc", "army", "navy", "air force"] },
+    { label: "Psychology & Social Science", keywords: ["psychology", "social", "behavioral"] },
+    { label: "Engineering", keywords: ["engineering", "mechanical", "electrical", "civil", "aerospace"] },
+    { label: "International & Study Abroad", keywords: ["international", "abroad", "global"] },
+  ];
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const filteredSuggestions = searchQuery.length > 0
+    ? KEYWORD_SUGGESTIONS.filter((s) =>
+        s.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.keywords.some((k) => k.includes(searchQuery.toLowerCase()))
+      )
+    : KEYWORD_SUGGESTIONS;
+
+  // Search across name, org, description, majors, categories
+  const searchScholarship = (s: Scholarship, q: string): boolean => {
+    const ql = q.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(ql) ||
+      s.organization.toLowerCase().includes(ql) ||
+      s.description.toLowerCase().includes(ql) ||
+      s.category.some((c) => c.includes(ql)) ||
+      (s.specificMajors || []).some((m) => m.toLowerCase().includes(ql)) ||
+      s.whatMakesStrongCandidate.some((w) => w.toLowerCase().includes(ql)) ||
+      s.eligibility.description.toLowerCase().includes(ql)
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Nav */}
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <nav className={`sticky top-0 z-40 ${!submitted ? "bg-black/40 backdrop-blur-md border-b border-white/10" : "bg-white border-b border-slate-200"}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-slate-900 text-lg tracking-tight">ScholarPath</span>
+            <span className={`font-bold text-lg tracking-tight ${!submitted ? "text-white" : "text-slate-900"}`}>Scholarship Route</span>
           </div>
           <div className="flex items-center gap-3">
             {submitted && (
@@ -336,10 +386,10 @@ export default function Home() {
             {!authLoading && (
               user ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500 hidden sm:inline">{user.email}</span>
+                  <span className={`text-xs hidden sm:inline ${!submitted ? "text-white/70" : "text-slate-500"}`}>{user.email}</span>
                   <button
                     onClick={signOut}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+                    className={`flex items-center gap-1.5 text-sm ${!submitted ? "text-white/70 hover:text-white" : "text-slate-500 hover:text-slate-700"}`}
                   >
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
@@ -347,7 +397,11 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 hover:border-indigo-300 px-3 py-1.5 rounded-lg transition-colors"
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
+                    !submitted
+                      ? "bg-white text-indigo-700 hover:bg-white/90"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   Sign In
@@ -358,28 +412,39 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        {!submitted ? (
-          <>
-            {/* Hero */}
-            <div className="text-center mb-10">
-              <h1 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
-                Find Scholarships Built for You
-              </h1>
-              <p className="text-slate-500 text-lg max-w-xl mx-auto">
-                {user
-                  ? "Welcome back — your profile is loaded. Update anything and search."
-                  : "Fill out your profile once. Get matched with scholarships you can actually win — with AI-powered essay help included."}
-              </p>
-              {!user && (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-                >
-                  Create a free account to save your profile
-                </button>
-              )}
-            </div>
+      {!submitted ? (
+        /* ─── PROFILE VIEW WITH BACKGROUND IMAGE ─── */
+        <div
+          className="min-h-[calc(100vh-4rem)]"
+          style={{
+            backgroundImage: "url('/hero-bg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+          }}
+        >
+          <div className="min-h-[calc(100vh-4rem)] bg-black/45">
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+              {/* Hero */}
+              <div className="text-center mb-10">
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
+                  Find Scholarships Built for You
+                </h1>
+                <p className="text-white/90 text-lg max-w-xl mx-auto leading-relaxed">
+                  {user
+                    ? "Welcome back. Your profile is loaded and ready to go."
+                    : "Fill out your profile once. Get matched with scholarships you can win, see a personalized roadmap to strengthen your applications, and Scholarship Route can even draft your essays for you."}
+                </p>
+                {!user && (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="mt-5 inline-flex items-center gap-2 bg-white text-indigo-700 font-semibold px-6 py-3 rounded-xl text-base shadow-lg hover:bg-white/95 transition-colors"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Create Free Account
+                  </button>
+                )}
+              </div>
 
             {/* Profile Form */}
             <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
@@ -958,14 +1023,17 @@ export default function Home() {
                   <Search className="w-4 h-4" />
                   Find My Scholarships
                 </button>
-                <p className="text-center text-xs text-slate-400 mt-2">
-                  Results are instant — no waiting, no AI search delays.
+                <p className="text-center text-xs text-white/60 mt-2">
+                  Results are instant. No waiting.
                 </p>
               </div>
             </form>
-          </>
-        ) : (
-          /* ─── RESULTS VIEW ─── */
+            </main>
+          </div>
+        </div>
+      ) : (
+        /* ─── RESULTS VIEW ─── */
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
           <div id="results">
             {/* Profile summary bar */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 mb-6 flex items-center gap-4 flex-wrap">
@@ -1008,14 +1076,39 @@ export default function Home() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search scholarships..."
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="Search by keyword (e.g., environment, nursing, leadership...)"
                   className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                     <X className="w-4 h-4" />
                   </button>
+                )}
+                {/* Keyword suggestions dropdown */}
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div className="absolute z-30 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-72 overflow-y-auto">
+                    {filteredSuggestions.map((s) => {
+                      const matchCount = matchedScholarships.filter((sch) =>
+                        s.keywords.some((k) => searchScholarship(sch, k))
+                      ).length;
+                      return (
+                        <button
+                          key={s.label}
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery(s.keywords[0]);
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center justify-between"
+                        >
+                          <span className="text-sm font-medium text-slate-700">{s.label}</span>
+                          <span className="text-xs text-slate-400">{matchCount} scholarships</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
               <button
@@ -1121,9 +1214,9 @@ export default function Home() {
             </div>
 
             {/* Grid */}
-            {filteredScholarships.length > 0 ? (
+            {paginatedScholarships.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredScholarships.map((scholarship) => (
+                {paginatedScholarships.map((scholarship) => (
                   <ScholarshipCard
                     key={scholarship.id}
                     scholarship={scholarship}
@@ -1139,13 +1232,50 @@ export default function Home() {
               </div>
             )}
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => { setPage(Math.max(1, page - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  disabled={page === 1}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                        p === page
+                          ? "bg-indigo-600 text-white"
+                          : "text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => { setPage(Math.min(totalPages, page + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  disabled={page === totalPages}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {/* Affiliate resources */}
             {matchedScholarships.length > 0 && (
               <AffiliateResources scholarships={matchedScholarships} />
             )}
           </div>
-        )}
-      </main>
+        </main>
+      )}
 
       <ScholarshipModal
         scholarship={selectedScholarship}

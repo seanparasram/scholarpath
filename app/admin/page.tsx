@@ -89,7 +89,7 @@ export default function AdminPage() {
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-slate-900">ScholarPath Admin</span>
+            <span className="font-bold text-slate-900">Scholarship Route Admin</span>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -129,7 +129,7 @@ export default function AdminPage() {
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
             <GraduationCap className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-bold text-slate-900">ScholarPath — Lead Dashboard</span>
+          <span className="font-bold text-slate-900">Scholarship Route — Lead Dashboard</span>
         </div>
         <div className="flex items-center gap-3">
           <button

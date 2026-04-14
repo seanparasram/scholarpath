@@ -20,7 +20,7 @@ const RESOURCES: Resource[] = [
     description: "Score higher on the SAT or ACT with structured courses, practice tests, and tutoring. Many scholarships have minimum score requirements.",
     tag: "Test Prep",
     tagColor: "bg-blue-50 text-blue-700",
-    url: "https://www.princetonreview.com/college/sat-act-prep?ExternalLinkTracker=ScholarPath",
+    url: "https://www.princetonreview.com/college/sat-act-prep?ExternalLinkTracker=Scholarship Route",
     relevantFor: ["merit", "stem", "science", "national"],
     callToAction: "View Courses",
   },
@@ -71,7 +71,7 @@ const RESOURCES: Resource[] = [
   },
   {
     name: "Chegg Scholarships",
-    description: "Search 25,000+ scholarships and get matched daily. Good companion tool alongside ScholarPath for expanding your search.",
+    description: "Search 25,000+ scholarships and get matched daily. Good companion tool alongside Scholarship Route for expanding your search.",
     tag: "Scholarship Search",
     tagColor: "bg-yellow-50 text-yellow-700",
     url: "https://www.chegg.com/scholarships?ref=scholarpath",
@@ -173,7 +173,7 @@ export default function AffiliateResources({ scholarships }: Props) {
       )}
 
       <p className="text-xs text-slate-400 text-center mt-3">
-        Some links above are affiliate links. ScholarPath may earn a commission at no cost to you.
+        Some links above are affiliate links. Scholarship Route may earn a commission at no cost to you.
       </p>
     </div>
   );
